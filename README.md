@@ -1,50 +1,60 @@
-CricVision AI: Real-Time Cricket Shot Classifier 🏏🤖
-CricVision AI is a Computer Vision project that uses Deep Learning to recognize and classify cricket shots (e.g., Cover Drive, Pull Shot, Late Cut). By tracking the batsman's "skeleton" in 3D space, the system identifies the shot based on biomechanical movement rather than just pixels.
+# 🏏 CricVision AI
+### **Real-Time Cricket Shot Classification using Biomechanical Pose Estimation**
 
-🚀 Overview
-Traditional sports analytics requires manual tagging. CricVision AI automates this by:
+![Python](https://img.shields.io/badge/Python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![TensorFlow](https://img.shields.io/badge/TensorFlow-FF6F00?style=for-the-badge&logo=tensorflow&logoColor=white)
+![OpenCV](https://img.shields.io/badge/OpenCV-5C3EE8?style=for-the-badge&logo=opencv&logoColor=white)
+![MediaPipe](https://img.shields.io/badge/MediaPipe-00C7B7?style=for-the-badge&logo=google&logoColor=white)
 
-Extracting skeletal landmarks using MediaPipe.
+---
 
-Analyzing the temporal sequence of movement (how joints move over time).
+## 🌟 Project Highlights
+* **Skeletal Tracking:** Leverages **MediaPipe Pose** to track 33 key body landmarks in 3D space, ensuring accuracy regardless of clothing or background noise.
+* **Temporal Intelligence:** Unlike static image classifiers, this uses an **LSTM (Long Short-Term Memory)** architecture to analyze the *sequence* of a shot over 30-60 frames.
+* **Biomechanical Analysis:** Calculates real-time joint angles to differentiate between similar movements (e.g., distinguishing a Defensive Push from a Cover Drive).
+* **Performance:** Optimized for real-time inference on standard CPUs using coordinate-based feature extraction.
 
-Classifying the shot using a Neural Network.
+---
 
-🛠️ Tech Stack
-Language: Python 3.9+
+## 🧠 The Logic: How It Works
+The system identifies shots by calculating the **Cosine Similarity** and **Joint Angles** between specific landmarks. For a **Cover Drive**, the system monitors the angle $\theta$ of the lead knee and the vertical trajectory of the wrists.
 
-Computer Vision: OpenCV, MediaPipe
+The angle between three joints (e.g., Hip, Knee, Ankle) is calculated using the Law of Cosines:
 
-Deep Learning: TensorFlow / Keras
+$$\theta = \arccos \left( \frac{a^2 + b^2 - c^2}{2ab} \right)$$
 
-Data Handling: NumPy, Pandas
+Where:
+* $a, b$ are the lengths of the segments connecting the joints.
+* $c$ is the distance between the two outer joints.
 
-Deployment (Planned): Streamlit / Flask
+When the system detects a specific threshold of $\theta$ combined with a forward movement vector, the "Shot" is triggered.
 
-📂 Project Structure
-Plaintext
-├── data/               # Video samples and extracted CSV landmarks
-├── models/             # Saved .h5 model files
+---
+
+## 🛠️ System Architecture
+
+### **1. Frame Processing**
+Raw video is ingested at 30 FPS using `OpenCV`. Each frame is converted to RGB and passed to the MediaPipe pipeline.
+
+### **2. Feature Extraction**
+We extract $X, Y, Z$ coordinates for the following critical landmarks:
+* **Shoulders & Hips:** To measure torso tilt.
+* **Elbows & Wrists:** To map the bat swing arc.
+* **Knees & Ankles:** To determine front-foot or back-foot dominance.
+
+### **3. Deep Learning Pipeline**
+The processed coordinates are fed into an **LSTM Network**:
+`Input (Sequence_Length, Landmarks) → LSTM (64 units) → Dense (32) → Softmax (Classification)`
+
+---
+
+## 📂 Project Structure
+```text
+├── data/               # Raw video clips and extracted CSV landmarks
+├── models/             # Pre-trained .h5 or TFLite models
 ├── src/
-│   ├── collect_data.py # Extracting landmarks from video frames
-│   ├── train.py        # LSTM/CNN model training logic
-│   └── main.py         # Real-time inference and overlay script
+│   ├── preprocess.py   # Landmark extraction script
+│   ├── train.py        # LSTM Model training logic
+│   └── main.py         # Real-time inference & OpenCV overlay
 ├── requirements.txt    # Project dependencies
 └── README.md
-⚙️ How It Works
-The system follows a 3-step pipeline:
-
-1. Pose Extraction
-For every frame, the system tracks 33 key points. For cricket, we focus on:
-
-Shoulders & Hips: To detect torso rotation.
-
-Elbows & Wrists: To track bat swing trajectory.
-
-Knees & Ankles: To identify footwork (front foot vs. back foot).
-
-2. Temporal Processing
-Since a "Shot" is a movement, not a still image, we group 30 consecutive frames into a single sequence. This allows the model to see the "flow" of the shot.
-
-3. Classification
-The processed sequence is fed into a Long Short-Term Memory (LSTM) network, which is ideal for time-series data like video
