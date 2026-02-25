@@ -1,0 +1,51 @@
+add<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVision AI - Cricket Shot Classifier</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h1 { color: #333; }
+        input[type="file"] { margin: 10px 0; }
+        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        #result { margin-top: 20px; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <h1>🏏 CricVision AI</h1>
+    <p>Upload a cricket video to classify the shot using AI pose estimation.</p>
+    <input type="file" id="videoInput" accept="video/*">
+    <button onclick="uploadVideo()">Upload and Classify</button>
+    <div id="result"></div>
+    <script>
+        function uploadVideo() {
+            const fileInput = document.getElementById('videoInput');
+            const file = fileInput.files[0];
+            if (file) {
+                const formData = new FormData();
+                formData.append('video', file);
+                document.getElementById('result').innerText = 'Processing...';
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById('result').innerText = 'Error: ' + data.error;
+                    } else {
+                        document.getElementById('result').innerText = `Detected Shot: ${data.shot} (Processed ${data.frames_processed} frames)`;
+                    }
+                })
+                .catch(error => {
+                    document.getElementById('result').innerText = 'Error: ' + error.message;
+                });
+            } else {
+                alert('Please select a video file.');
+            }
+        }
+    </script>
+</body>
+</html>
