@@ -5,20 +5,92 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CricVision AI - Cricket Shot Classifier</title>
     <style>
-        body { font-family: Arial, sans-serif; margin: 20px; }
-        h1 { color: #333; }
-        input[type="file"] { margin: 10px 0; }
-        button { padding: 10px 20px; background-color: #4CAF50; color: white; border: none; cursor: pointer; }
-        button:hover { background-color: #45a049; }
-        #result { margin-top: 20px; font-size: 18px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #333; line-height: 1.6; }
+        header { background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; position: fixed; width: 100%; top: 0; z-index: 1000; }
+        nav a { color: white; text-decoration: none; margin: 0 15px; font-weight: 500; transition: color 0.3s; }
+        nav a:hover { color: #ffd700; }
+        .hero { background: url('https://via.placeholder.com/1920x600/333/fff?text=Cricket+Field') no-repeat center center/cover; height: 100vh; display: flex; align-items: center; justify-content: center; text-align: center; color: white; position: relative; }
+        .hero::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.5); }
+        .hero-content { position: relative; z-index: 1; max-width: 800px; padding: 20px; }
+        .hero h1 { font-size: 3.5rem; margin-bottom: 20px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .hero p { font-size: 1.5rem; margin-bottom: 30px; }
+        .btn { display: inline-block; padding: 15px 30px; background: #ffd700; color: #333; text-decoration: none; border-radius: 50px; font-weight: bold; transition: all 0.3s; }
+        .btn:hover { background: #ffed4e; transform: translateY(-2px); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        .container { max-width: 1200px; margin: 0 auto; padding: 60px 20px; }
+        .section { margin-bottom: 60px; }
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
+        .card { background: white; border-radius: 15px; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-10px); }
+        .card h3 { color: #667eea; margin-bottom: 15px; font-size: 1.5rem; }
+        .upload-section { background: white; border-radius: 15px; padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        input[type="file"] { margin: 20px 0; padding: 10px; border: 2px dashed #667eea; border-radius: 10px; width: 100%; max-width: 400px; }
+        button { padding: 15px 30px; background: linear-gradient(45deg, #667eea, #764ba2); color: white; border: none; border-radius: 50px; cursor: pointer; font-size: 16px; transition: all 0.3s; }
+        button:hover { background: linear-gradient(45deg, #764ba2, #667eea); transform: scale(1.05); }
+        #result { margin-top: 20px; font-size: 18px; color: #333; }
+        .login-msg { color: #e74c3c; font-weight: bold; }
+        footer { background: #333; color: white; text-align: center; padding: 20px; margin-top: 60px; }
     </style>
 </head>
 <body>
-    <h1>🏏 CricVision AI</h1>
-    <p>Upload a cricket video to classify the shot using AI pose estimation.</p>
-    <input type="file" id="videoInput" accept="video/*">
-    <button onclick="uploadVideo()">Upload and Classify</button>
-    <div id="result"></div>
+    <header>
+        <h2>🏏 CricVision AI</h2>
+        <nav>
+            <a href="/">Home</a>
+            {% if logged_in %}
+            <span>Welcome, {{ username }}!</span>
+            <a href="{{ url_for('logout') }}">Logout</a>
+            {% else %}
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}">Sign Up</a>
+            {% endif %}
+        </nav>
+    </header>
+    
+    <section class="hero">
+        <div class="hero-content">
+            <h1>Revolutionize Cricket Training</h1>
+            <p>Upload your cricket shots and get instant AI-powered classification with biomechanical analysis.</p>
+            <a href="#upload" class="btn">Get Started</a>
+        </div>
+    </section>
+    
+    <div class="container">
+        <section class="section">
+            <h2 style="text-align: center; margin-bottom: 40px; color: white;">Why Choose CricVision AI?</h2>
+            <div class="cards">
+                <div class="card">
+                    <h3>🏆 Advanced AI</h3>
+                    <p>Leveraging MediaPipe pose estimation and LSTM models for accurate shot recognition.</p>
+                </div>
+                <div class="card">
+                    <h3>⚡ Real-Time Analysis</h3>
+                    <p>Process videos instantly and get feedback on Cover Drive, Pull Shot, and Late Cut.</p>
+                </div>
+                <div class="card">
+                    <h3>📊 Biomechanical Insights</h3>
+                    <p>Detailed joint angle calculations for improved technique and performance.</p>
+                </div>
+            </div>
+        </section>
+        
+        <section id="upload" class="section upload-section">
+            <h2>Classify Your Cricket Shot</h2>
+            {% if not logged_in %}
+            <p class="login-msg">Please <a href="{{ url_for('login') }}">login</a> to upload videos and access AI classification.</p>
+            {% else %}
+            <input type="file" id="videoInput" accept="video/*">
+            <br>
+            <button onclick="uploadVideo()">Analyze Shot</button>
+            <div id="result"></div>
+            {% endif %}
+        </section>
+    </div>
+    
+    <footer>
+        <p>&copy; 2024 CricVision AI. All rights reserved.</p>
+    </footer>
+    
     <script>
         function uploadVideo() {
             const fileInput = document.getElementById('videoInput');
@@ -26,7 +98,7 @@
             if (file) {
                 const formData = new FormData();
                 formData.append('video', file);
-                document.getElementById('result').innerText = 'Processing...';
+                document.getElementById('result').innerText = 'Analyzing your shot...';
                 fetch('/upload', {
                     method: 'POST',
                     body: formData
@@ -36,14 +108,14 @@
                     if (data.error) {
                         document.getElementById('result').innerText = 'Error: ' + data.error;
                     } else {
-                        document.getElementById('result').innerText = `Detected Shot: ${data.shot} (Processed ${data.frames_processed} frames)`;
+                        document.getElementById('result').innerText = `🏏 Detected: ${data.shot} | Frames Processed: ${data.frames_processed}`;
                     }
                 })
                 .catch(error => {
                     document.getElementById('result').innerText = 'Error: ' + error.message;
                 });
             } else {
-                alert('Please select a video file.');
+                alert('Please select a video file to analyze.');
             }
         }
     </script>
