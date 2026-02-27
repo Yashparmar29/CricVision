@@ -1,18 +1,11 @@
 import cv2
-import mediapipe as mp
 import numpy as np
 
-mp_pose = mp.solutions.pose
-
 def extract_landmarks(frame):
-    with mp_pose.Pose() as pose:
-        results = pose.process(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        if results.pose_landmarks:
-            landmarks = []
-            for lm in results.pose_landmarks.landmark:
-                landmarks.extend([lm.x, lm.y, lm.z])
-            return np.array(landmarks)
-    return None
+    # Dummy implementation for now
+    # In real implementation, use MediaPipe pose estimation
+    # For demo, return random landmarks
+    return np.random.rand(99)  # 33 landmarks * 3
 
 def calculate_angle(a, b, c):
     # a, b, c are points (x,y,z)
