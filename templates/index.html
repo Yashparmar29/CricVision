@@ -647,10 +647,11 @@
             <a href="#features">Features</a>
             {% if logged_in %}
             <span style="color: var(--accent-primary);">Hi, {{ username }}</span>
-            <a href="login.html" class="nav-btn" style="background: rgba(255,255,255,0.1); box-shadow: none;">Logout</a>
+            <a href="{{ url_for('logout') }}" class="nav-btn"
+                style="background: rgba(255,255,255,0.1); box-shadow: none;">Logout</a>
             {% else %}
-            <a href="login.html">Login</a>
-            <a href="signup.html" class="nav-btn">Sign Up</a>
+            <a href="{{ url_for('login') }}">Login</a>
+            <a href="{{ url_for('signup') }}" class="nav-btn">Sign Up</a>
             {% endif %}
         </nav>
     </header>
