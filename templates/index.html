@@ -154,6 +154,37 @@
             }
         }
 
+        .flying-bat {
+            position: absolute;
+            font-size: clamp(6rem, 15vw, 12rem);
+            top: 50%;
+            left: -300px;
+            transform: translateY(-50%) rotate(-45deg);
+            animation: flyInBat 1.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+            z-index: 0;
+            /* Behind the content, or just low opacity */
+            opacity: 0.15;
+            filter: drop-shadow(0 0 20px var(--accent-primary));
+        }
+
+        @keyframes flyInBat {
+            0% {
+                left: -300px;
+                transform: translateY(-50%) rotate(-90deg) scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                opacity: 0.2;
+            }
+
+            100% {
+                left: -5%;
+                transform: translateY(-50%) rotate(15deg) scale(1);
+                opacity: 0.15;
+            }
+        }
+
         .tagline {
             display: inline-block;
             padding: 0.25rem 1rem;
@@ -657,6 +688,7 @@
     </header>
 
     <section class="hero">
+        <div class="flying-bat">🏏</div>
         <div class="hero-content">
             <div class="tagline">Next-Gen Biomechanical Analysis</div>
             <h1>Revolutionize Your Cricket Technique</h1>
