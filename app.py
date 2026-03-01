@@ -9,11 +9,23 @@ app.secret_key = 'your_secret_key'  # For session management
 app.config['UPLOAD_FOLDER'] = 'uploads'
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
+@app.context_processor
+def inject_user():
+    return dict(logged_in='username' in session, username=session.get('username'))
+
 @app.route('/')
 def index():
-    if 'username' in session:
-        return render_template('index.html', logged_in=True, username=session['username'])
-    return render_template('index.html', logged_in=False)
+    return render_template('index.html')
+
+@app.route('/features')
+def features():
+    return render_template('features.html')
+
+@app.route('/dashboard')
+def dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -23,7 +35,7 @@ def login():
         # Dummy authentication
         if username == 'admin' and password == 'password':
             session['username'] = username
-            return redirect(url_for('index'))
+            return redirect(url_for('dashboard'))
         return render_template('login.html', error='Invalid credentials')
     return render_template('login.html')
 
@@ -34,13 +46,13 @@ def signup():
         password = request.form['password']
         # Dummy signup (no storage)
         session['username'] = username
-        return redirect(url_for('index'))
+        return redirect(url_for('dashboard'))
     return render_template('signup.html')
 
 @app.route('/logout')
 def logout():
     session.pop('username', None)
-    return redirect(url_for('index'))
+    return redirect(url_for('login'))
 
 @app.route('/upload', methods=['POST'])
 def upload():
