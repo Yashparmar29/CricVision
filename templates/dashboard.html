@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Dashboard - CricVision AI{% endblock %}
+{% block content %}
+<div class="page-header">
+    <h1>Analysis Dashboard</h1>
+    <p>Upload your shot videos and get instant biomechanical feedback</p>
+</div>
+
+<div class="container" style="margin-top: 2rem;">
+    <div class="upload-wrapper">
+            <section id="upload" class="upload-section">
+                <div class="upload-icon">📹</div>
+                <h2>Classify Your Cricket Shot</h2>
+                <p style="color: var(--text-muted); margin-top: 10px;">Upload a clear video of your batting stroke for
+                    AI analysis.</p>
+
+                {% if not logged_in %}
+                <div class="auth-banner">
+                    Please <a href="{{ url_for('login') }}">login or register</a> to upload videos and access the AI
+                    classification engine.
+                </div>
+                {% else %}
+                <div class="file-upload-container">
+                    <input type="file" id="videoInput" accept="video/*" onchange="updateFileName(this)">
+                    <div class="file-upload-label">
+                        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)"
+                            stroke-width="2" style="margin-bottom: 15px;">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
+                        </svg>
+                        <p>Drag & Drop your video here</p>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 5px;">or click to browse
+                            files (MP4, MOV)</p>
+                    </div>
+                    <div id="fileName" class="file-name-display"></div>
+                </div>
+
+                <button onclick="uploadVideo()" class="btn-large" style="width: auto;">
+                    Analyze Shot Segment
+                </button>
+                <div id="result"></div>
+                {% endif %}
+            </section>
+        </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+        function updateFileName(input) {
+            const fileNameDisplay = document.getElementById('fileName');
+            if (input.files && input.files.length > 0) {
+                fileNameDisplay.textContent = 'Selected: ' + input.files[0].name;
+            } else {
+                fileNameDisplay.textContent = '';
+            }
+        }
+
+        function uploadVideo() {
+            const fileInput = document.getElementById('videoInput');
+            const resultDiv = document.getElementById('result');
+            const file = fileInput.files[0];
+
+            if (file) {
+                const formData = new FormData();
+                formData.append('video', file);
+
+                resultDiv.className = 'active';
+                resultDiv.innerHTML = '<span class="loading-spinner"></span> Analyzing your biomechanical data...';
+                resultDiv.style.color = 'var(--text-main)';
+                resultDiv.style.border = '1px solid rgba(255,255,255,0.1)';
+
+                fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            resultDiv.innerHTML = '⚠️ Error: ' + data.error;
+                            resultDiv.style.color = '#ef4444';
+                            resultDiv.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                        } else {
+                            resultDiv.innerHTML = `🏏 <span style="color:var(--accent-primary);">AI Detection: <strong>${data.shot}</strong></span><br><span style="font-size:0.9rem; color:var(--text-muted); margin-top:5px; display:block;">Frames Processed: ${data.frames_processed}</span>`;
+                            resultDiv.style.borderColor = 'var(--accent-primary)';
+                            resultDiv.style.background = 'rgba(16, 185, 129, 0.05)';
+                        }
+                    })
+                    .catch(error => {
+                        resultDiv.innerHTML = '⚠️ Connection Error: ' + error.message;
+                        resultDiv.style.color = '#ef4444';
+                        resultDiv.style.borderColor = 'rgba(239, 68, 68, 0.3)';
+                    });
+            } else {
+                alert('Please select a video file to analyze first.');
+            }
+        }
+    
+</script>
+{% endblock %}
