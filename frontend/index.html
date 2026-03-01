@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CricVision AI</title>
+
+    <!-- Fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Tailwind CSS (via CDN for local dev without node) -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            900: '#0A1128',
+                            800: '#14213D',
+                            700: '#1C2C54'
+                        },
+                        slate: {
+                            800: '#334155',
+                            700: '#475569'
+                        },
+                        neon: {
+                            green: '#39FF14',
+                            glow: 'rgba(57, 255, 20, 0.4)'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Outfit', 'sans-serif']
+                    },
+                    backgroundImage: {
+                        'glass-gradient': 'linear-gradient(135deg, rgba(20, 33, 61, 0.6) 0%, rgba(10, 17, 40, 0.8) 100%)',
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- CSS for Custom Animations -->
+    <style>
+        body {
+            margin: 0;
+            background-color: #0A1128;
+            color: #f8fafc;
+            overflow-x: hidden;
+        }
+
+        /* Glassmorphism */
+        .glass-panel {
+            background: rgba(20, 33, 61, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Particles */
+        #particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .particle {
+            position: absolute;
+            background: #39FF14;
+            border-radius: 50%;
+            opacity: 0.3;
+            box-shadow: 0 0 10px #39FF14;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) scale(0);
+                opacity: 0;
+            }
+
+            10% {
+                opacity: 0.5;
+            }
+
+            90% {
+                opacity: 0.5;
+            }
+
+            100% {
+                transform: translateY(-100px) scale(1);
+                opacity: 0;
+            }
+        }
+
+        /* Skeletal Animation Styles */
+        .skeleton-dot {
+            r: 4;
+            fill: #39FF14;
+            filter: drop-shadow(0 0 5px #39FF14);
+            animation: pulse 1s infinite alternate;
+        }
+
+        .skeleton-line {
+            stroke: rgba(57, 255, 20, 0.6);
+            stroke-width: 2;
+            stroke-dasharray: 4;
+            animation: slide 2s linear infinite;
+        }
+
+        @keyframes pulse {
+            to {
+                transform: scale(1.5);
+                fill: #fff;
+            }
+        }
+
+        @keyframes slide {
+            to {
+                stroke-dashoffset: -8;
+            }
+        }
+
+        /* Cover Drive SVG Setup */
+        .cover-drive-svg {
+            width: 100%;
+            max-width: 500px;
+            filter: drop-shadow(0 0 20px rgba(57, 255, 20, 0.2));
+            transform-origin: center bottom;
+        }
+    </style>
+
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Framer Motion -->
+    <script src="https://unpkg.com/framer-motion@11.11.1/dist/framer-motion.js"></script>
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body class="bg-navy-900 text-slate-100 antialiased font-sans">
+
+    <!-- Container for React App -->
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { motion, AnimatePresence } = window.Motion;
+        const { useState, useEffect, useRef } = React;
+
+        // Particle Background Component
+        const ParticleBackground = () => {
+            const [particles, setParticles] = useState([]);
+
+            useEffect(() => {
+                const count = 30;
+                const newParticles = Array.from({ length: count }).map((_, i) => ({
+                    id: i,
+                    left: `${Math.random() * 100}%`,
+                    size: `${Math.random() * 3 + 1}px`,
+                    delay: `${Math.random() * 15}s`,
+                    duration: `${Math.random() * 10 + 10}s`
+                }));
+                setParticles(newParticles);
+            }, []);
+
+            return (
+                <div id="particles">
+                    {particles.map(p => (
+                        <div key={p.id} className="particle" style={{
+                            left: p.left,
+                            width: p.size,
+                            height: p.size,
+                            animationDelay: p.delay,
+                            animationDuration: p.duration
+                        }} />
+                    ))}
+                </div>
+            );
+        };
+
+        // Custom Cover Drive SVG Illustration
+        const CoverDriveAnimation = () => {
+            return (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 1 }}
+                    className="relative w-full flex justify-center items-center"
+                >
+                    <svg viewBox="0 0 400 400" className="cover-drive-svg">
+                        <defs>
+                            <linearGradient id="batGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" stopColor="#475569" />
+                                <stop offset="100%" stopColor="#14213D" />
+                            </linearGradient>
+                            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+                                <feGaussianBlur stdDeviation="5" result="blur" />
+                                <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                            </filter>
+                        </defs>
+
+                        {/* Silhouette Batsman */}
+                        <path d="M 170 180 Q 150 250 160 350 L 190 350 Q 190 270 200 200 Z" fill="#14213D" /> <!-- Back Leg -->
+                        <path d="M 230 190 Q 250 270 280 340 L 250 340 Q 220 270 210 200 Z" fill="#1C2C54" /> <!-- Front Leg -->
+                        <path d="M 180 120 Q 200 130 220 180 L 170 190 Z" fill="#14213D" /> <!-- Torso -->
+                        <circle cx="210" cy="90" r="25" fill="#1C2C54" /> <!-- Head w Helmet -->
+                        <path d="M 230 90 L 250 110" stroke="#39FF14" strokeWidth="3" /> <!-- Grill -->
+
+                        {/* Arms & Bat */}
+                        <path d="M 190 130 Q 150 150 140 190" stroke="#1C2C54" strokeWidth="15" fill="none" strokeLinecap="round" /> <!-- Left Arm -->
+                        <path d="M 210 130 Q 240 160 270 190" stroke="#14213D" strokeWidth="15" fill="none" strokeLinecap="round" /> <!-- Right Arm -->
+
+                        <path d="M 130 180 L 80 280 L 95 285 L 145 185 Z" fill="url(#batGrad)" /> <!-- Bat handle/blade -->
+                        <path d="M 80 280 Q 70 300 85 310 L 105 270 Z" fill="#39FF14" opacity="0.8" /> <!-- Bat Face highlight -->
+
+                        {/* Skeleton Lines */}
+                        <g className="skeleton-lines">
+                            <line x1="210" y1="90" x2="200" y2="150" className="skeleton-line" /> <!-- Neck to Spine -->
+                            <line x1="200" y1="150" x2="180" y2="200" className="skeleton-line" /> <!-- Spine to Hip -->
+
+                            <line x1="180" y1="200" x2="160" y2="270" className="skeleton-line" /> <!-- L Hip to Knee -->
+                            <line x1="160" y1="270" x2="175" y2="340" className="skeleton-line" /> <!-- L Knee to Ankle -->
+
+                            <line x1="180" y1="200" x2="230" y2="260" className="skeleton-line" /> <!-- R Hip to Knee -->
+                            <line x1="230" y1="260" x2="265" y2="330" className="skeleton-line" /> <!-- R Knee to Ankle -->
+
+                            <line x1="200" y1="150" x2="160" y2="170" className="skeleton-line" /> <!-- L Shoulder to Elbow -->
+                            <line x1="160" y1="170" x2="135" y2="190" className="skeleton-line" /> <!-- L Elbow to Wrist -->
+
+                            <line x1="200" y1="150" x2="240" y2="170" className="skeleton-line" /> <!-- R Shoulder to Elbow -->
+                            <line x1="240" y1="170" x2="260" y2="190" className="skeleton-line" /> <!-- R Elbow to Wrist -->
+                        </g>
+
+                        {/* Skeleton Dots */}
+                        <g>
+                            <circle cx="210" cy="90" className="skeleton-dot" style={{ animationDelay: "0s" }} /> <!-- Head -->
+                            <circle cx="200" cy="150" className="skeleton-dot" style={{ animationDelay: "0.2s" }} /> <!-- Shoulder Center -->
+                            <circle cx="180" cy="200" className="skeleton-dot" style={{ animationDelay: "0.4s" }} /> <!-- Hip Center -->
+
+                            <circle cx="160" cy="270" className="skeleton-dot" style={{ animationDelay: "0.1s" }} /> <!-- L Knee -->
+                            <circle cx="175" cy="340" className="skeleton-dot" style={{ animationDelay: "0.3s" }} /> <!-- L Ankle -->
+
+                            <circle cx="230" cy="260" className="skeleton-dot" style={{ animationDelay: "0.5s" }} /> <!-- R Knee -->
+                            <circle cx="265" cy="330" className="skeleton-dot" style={{ animationDelay: "0.2s" }} /> <!-- R Ankle -->
+
+                            <circle cx="160" cy="170" className="skeleton-dot" style={{ animationDelay: "0.4s" }} /> <!-- L Elbow -->
+                            <circle cx="135" cy="190" className="skeleton-dot" style={{ animationDelay: "0.1s" }} /> <!-- L Wrist -->
+
+                            <circle cx="240" cy="170" className="skeleton-dot" style={{ animationDelay: "0.3s" }} /> <!-- R Elbow -->
+                            <circle cx="260" cy="190" className="skeleton-dot" style={{ animationDelay: "0.5s" }} /> <!-- R Wrist -->
+                        </g>
+
+                        {/* Dynamic Angle ARCs (Simulating AI detection) */}
+                        <path d="M 160 250 A 30 30 0 0 0 180 270" fill="none" stroke="white" strokeWidth="2" strokeDasharray="2" opacity="0.6" />
+                        <text x="140" y="260" fill="white" fontSize="12" fontFamily="Outfit">135°</text>
+
+                        <path d="M 230 240 A 30 30 0 1 1 210 270" fill="none" stroke="white" strokeWidth="2" strokeDasharray="2" opacity="0.6" />
+                        <text x="240" y="250" fill="white" fontSize="12" fontFamily="Outfit">142°</text>
+                    </svg>
+
+                    {/* Scanning Line overlay */}
+                    <motion.div
+                        animate={{ top: ['0%', '100%', '0%'] }}
+                        transition={{ duration: 4, repeat: Infinity, ease: "linear" }}
+                        className="absolute left-0 right-0 h-1 bg-neon-green opacity-50 shadow-[0_0_15px_#39FF14] z-10"
+                        style={{ width: '80%', margin: '0 10%' }}
+                    />
+                </motion.div>
+            );
+        };
+
+        const BentoCard = ({ title, desc, delay, iconName, isLarge = false }) => {
+            return (
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ duration: 0.6, delay }}
+                    className={`glass-panel p-8 rounded-3xl relative overflow-hidden group cursor-pointer ${isLarge ? 'md:col-span-2' : ''}`}
+                >
+                    {/* Hover Trail Animation Layer */}
+                    <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none">
+                        <motion.div
+                            animate={{
+                                x: ['-100%', '200%'],
+                                y: ['-50%', '150%']
+                            }}
+                            transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                            className="absolute w-32 h-32 bg-neon-green/30 blur-[40px] rounded-full"
+                        />
+                    </div>
+
+                    <div className="relative z-10">
+                        <div className="w-14 h-14 rounded-2xl bg-navy-800 border border-slate-700 flex items-center justify-center mb-6 group-hover:border-neon-green/50 transition-colors">
+                            <i data-lucide={iconName} className="text-neon-green w-7 h-7"></i>
+                        </div>
+                        <h3 className="font-display text-2xl font-semibold mb-3">{title}</h3>
+                        <p className="text-slate-400 group-hover:text-slate-300 transition-colors">{desc}</p>
+                    </div>
+                </motion.div>
+            );
+        };
+
+        const LiveFeedSimulation = () => {
+            return (
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.5, duration: 0.8 }}
+                    className="glass-panel rounded-3xl overflow-hidden relative border-neon-green/30 shadow-[0_0_30px_rgba(57,255,20,0.15)] flex flex-col justify-end"
+                    style={{ aspectRatio: "1/1" }}
+                >
+
+                    {/* Header bar */}
+                    <div className="absolute top-0 left-0 right-0 bg-navy-800/80 p-3 flex justify-between items-center z-20 border-b border-white/5 backdrop-blur-sm">
+                        <div className="flex items-center gap-2">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                            <span className="text-xs font-semibold tracking-wider text-slate-300">LIVE FEED</span>
+                        </div>
+                        <span className="text-xs font-mono text-neon-green">FPS: 59.9</span>
+                    </div>
+
+                    {/* Content area simulating video */}
+                    <div className="absolute inset-0 bg-navy-900 overflow-hidden flex items-center justify-center p-6 z-0">
+                        <CoverDriveAnimation />
+                        <div className="absolute top-4 right-4 glass-panel px-3 py-1 rounded-md text-xs font-mono text-slate-300 z-20">
+                            Latency: 12ms
+                        </div>
+                    </div>
+
+                    {/* Overlay Data */}
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 1, 0] }}
+                        transition={{ duration: 3, repeat: Infinity, repeatDelay: 1 }}
+                        className="relative z-20 mx-4 mb-4 glass-panel px-4 py-3 rounded-lg border border-neon-green/50 backdrop-blur-md"
+                    >
+                        <p className="font-mono text-sm text-white opacity-80 mb-1">Shot Detected:</p>
+                        <p className="font-display font-bold text-neon-green text-lg tracking-wide">Cover Drive [98.4%]</p>
+                    </motion.div>
+                </motion.div>
+            );
+        };
+
+        const App = () => {
+            // Initialize Lucide icons
+            useEffect(() => {
+                lucide.createIcons();
+            }, []);
+
+            return (
+                <div className="min-h-screen relative font-sans selection:bg-neon-green/30 selection:text-white pb-0">
+                    <ParticleBackground />
+
+                    {/* Navbar */}
+                    <nav className="fixed w-full z-50 py-4 top-0">
+                        <div className="max-w-7xl mx-auto px-6">
+                            <div className="glass-panel border-white/5 rounded-2xl px-6 h-16 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <i data-lucide="activity" className="text-neon-green w-6 h-6"></i>
+                                    <span className="font-display font-bold text-xl tracking-tight text-white">Cric<span className="text-neon-green">Vision</span></span>
+                                </div>
+                                <div className="hidden md:flex gap-8 text-sm font-medium">
+                                    <a href="#" className="text-slate-300 hover:text-neon-green transition-colors">Platform</a>
+                                    <a href="#" className="text-slate-300 hover:text-neon-green transition-colors">Technology</a>
+                                    <a href="#" className="text-slate-300 hover:text-neon-green transition-colors">Pricing</a>
+                                </div>
+                                <button className="bg-neon-green/10 text-neon-green border border-neon-green/50 px-5 py-2 rounded-xl font-semibold hover:bg-neon-green hover:text-navy-900 transition-all font-display">
+                                    Try Dashboard
+                                </button>
+                            </div>
+                        </div>
+                    </nav>
+
+                    {/* Hero Section */}
+                    <main className="relative z-10 pt-32 pb-20 px-6">
+                        <div className="max-w-7xl mx-auto">
+                            <div className="grid lg:grid-cols-2 gap-16 items-center">
+
+                                <motion.div
+                                    initial={{ opacity: 0, x: -50 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ duration: 0.8 }}
+                                    className="pt-10"
+                                >
+                                    <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-panel border-neon-green/30 mb-8">
+                                        <span className="w-2 h-2 rounded-full bg-neon-green animate-pulse"></span>
+                                        <span className="text-xs font-semibold tracking-wide text-neon-green uppercase font-mono">Engine v2.0 Live</span>
+                                    </div>
+
+                                    <h1 className="font-display text-5xl md:text-7xl font-bold leading-[1.1] mb-6 text-white text-balance">
+                                        The <span className="text-transparent bg-clip-text bg-gradient-to-r from-neon-green to-emerald-400">Future</span> of Biomechanical Analytics
+                                    </h1>
+
+                                    <p className="text-lg md:text-xl text-slate-400 mb-10 max-w-xl font-light">
+                                        Analyze every frame. Perfect every shot. Real-time skeletal tracking and deep learning models built for elite cricket performance.
+                                    </p>
+
+                                    <div className="flex flex-wrap gap-4">
+                                        <button className="bg-neon-green text-navy-900 px-8 py-4 rounded-full font-bold text-lg hover:bg-white transition-colors shadow-[0_0_20px_rgba(57,255,20,0.3)] hover:shadow-[0_0_30px_rgba(255,255,255,0.4)]">
+                                            Start Analyzing
+                                        </button>
+                                        <button className="glass-panel px-8 py-4 rounded-full font-semibold text-white hover:bg-white/10 transition-colors flex items-center gap-2 border-slate-600">
+                                            <i data-lucide="play" className="w-5 h-5 fill-slate-300"></i>
+                                            Watch Demo
+                                        </button>
+                                    </div>
+                                </motion.div>
+
+                                {/* Live Feed Snapshot Element */}
+                                <div className="relative mx-auto w-full max-w-md">
+                                    <div className="absolute -inset-10 bg-neon-green/10 blur-[80px] rounded-full z-0 pointer-events-none"></div>
+                                    <LiveFeedSimulation />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Bento Grid Features */}
+                        <div className="max-w-7xl mx-auto mt-40">
+
+                            <div className="mb-16 text-center">
+                                <h2 className="text-3xl md:text-5xl font-display font-bold mb-4">Unprecedented <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-neon-green">Precision</span></h2>
+                                <p className="text-slate-400 max-w-2xl mx-auto">Our computer vision models map thousands of parameters per second to uncover actionable insights unseen by the naked eye.</p>
+                            </div>
+
+                            <div className="grid md:grid-cols-3 gap-6">
+                                <BentoCard
+                                    iconName="activity"
+                                    title="Pose Estimation"
+                                    desc="33-point skeletal tracking translating physical movements into quantifiable data points."
+                                    delay={0.2}
+                                />
+                                <BentoCard
+                                    iconName="clock"
+                                    title="Temporal Analysis"
+                                    desc="Frame-by-frame breakdown of your swing mechanics, timing, and bat speed."
+                                    delay={0.4}
+                                />
+                                <BentoCard
+                                    iconName="zap"
+                                    title="Real-time Inference"
+                                    desc="Instantaneous shot classification powered by optimized edge-deployed LSTM networks."
+                                    delay={0.6}
+                                />
+                                <BentoCard
+                                    iconName="bar-chart-2"
+                                    title="Performance Dashboard"
+                                    desc="Track your progress over time. View heat maps of your strong zones and areas needing biomechanical adjustments. Compare your metrics against professional baselines."
+                                    delay={0.8}
+                                    isLarge={true}
+                                />
+                                <BentoCard
+                                    iconName="crosshair"
+                                    title="Joint Angle Tracking"
+                                    desc="Precise trigonometric measurements of elbow, knee, and hip flexions."
+                                    delay={1.0}
+                                />
+                            </div>
+                        </div>
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="glass-panel border-t border-white/5 py-12 mt-32 relative z-10 w-full rounded-b-none border-x-0 border-b-0">
+                        <div className="max-w-7xl mx-auto px-6 text-center">
+                            <i data-lucide="code" className="text-neon-green w-6 h-6 mx-auto mb-4"></i>
+                            <p className="text-slate-500 font-medium font-mono text-sm">© 2026 CricVision AI. Built for the modern game.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>
