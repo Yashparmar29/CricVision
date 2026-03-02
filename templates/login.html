@@ -1,22 +1,250 @@
 {% extends "base.html" %}
 {% block title %}Login - CricVision AI{% endblock %}
+
 {% block content %}
+<style>
+    /* ===== Animated Background ===== */
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364, #1f1c2c);
+        background-size: 400% 400%;
+        animation: gradientMove 12s ease infinite;
+        overflow: hidden;
+    }
+
+    @keyframes gradientMove {
+        0% {
+            background-position: 0% 50%;
+        }
+
+        50% {
+            background-position: 100% 50%;
+        }
+
+        100% {
+            background-position: 0% 50%;
+        }
+    }
+
+    /* ===== Centered Glass Container ===== */
+    .auth-container {
+        width: 400px;
+        padding: 45px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        backdrop-filter: blur(25px);
+        background: rgba(255, 255, 255, 0.06);
+        border-radius: 25px;
+        box-shadow: 0 0 50px rgba(0, 255, 255, 0.2);
+        text-align: center;
+        animation: fadeSlide 1s ease forwards;
+        opacity: 0;
+    }
+
+    @keyframes fadeSlide {
+        from {
+            transform: translate(-50%, -40%);
+            opacity: 0;
+        }
+
+        to {
+            transform: translate(-50%, -50%);
+            opacity: 1;
+        }
+    }
+
+    .auth-container h1 {
+        color: #ffffff;
+        margin-bottom: 35px;
+        font-weight: 600;
+        letter-spacing: 1px;
+    }
+
+    /* ===== Form ===== */
+    .auth-form {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group {
+        position: relative;
+        margin-bottom: 28px;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 16px 45px 16px 16px;
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.3);
+        border-radius: 14px;
+        color: #ffffff;
+        outline: none;
+        font-size: 15px;
+        transition: 0.3s;
+    }
+
+    .form-group input:focus {
+        border-color: #00ffff;
+        box-shadow: 0 0 15px #00ffff;
+    }
+
+    /* Floating Label Effect */
+    .form-group label {
+        position: absolute;
+        top: 50%;
+        left: 16px;
+        transform: translateY(-50%);
+        color: #ccc;
+        font-size: 14px;
+        pointer-events: none;
+        transition: 0.3s;
+    }
+
+    .form-group input:focus+label,
+    .form-group input:not(:placeholder-shown)+label {
+        top: -8px;
+        left: 12px;
+        font-size: 12px;
+        background: rgba(15, 32, 39, 0.8);
+        padding: 0 6px;
+        border-radius: 6px;
+        color: #00ffff;
+    }
+
+    /* Password Toggle */
+    .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #aaa;
+        font-size: 14px;
+    }
+
+    /* ===== Button ===== */
+    .auth-btn {
+        padding: 15px;
+        border: none;
+        border-radius: 14px;
+        background: linear-gradient(45deg, #00c6ff, #0072ff);
+        color: white;
+        font-weight: bold;
+        font-size: 15px;
+        cursor: pointer;
+        transition: 0.4s;
+        margin-top: 10px;
+    }
+
+    .auth-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 25px #00c6ff;
+    }
+
+    .auth-btn:active {
+        transform: scale(0.97);
+    }
+
+    /* ===== Error Message ===== */
+    .error-msg {
+        background: rgba(255, 0, 0, 0.15);
+        padding: 12px;
+        border-radius: 12px;
+        color: #ff4d4d;
+        margin-bottom: 20px;
+        animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-6px);
+        }
+
+        75% {
+            transform: translateX(6px);
+        }
+    }
+
+    /* ===== Links ===== */
+    .auth-links {
+        margin-top: 22px;
+        color: #cccccc;
+        font-size: 14px;
+    }
+
+    .auth-links a {
+        color: #00c6ff;
+        text-decoration: none;
+        font-weight: 500;
+    }
+
+    .auth-links a:hover {
+        text-decoration: underline;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 480px) {
+        .auth-container {
+            width: 90%;
+            padding: 30px;
+        }
+    }
+</style>
+
 <div class="auth-container">
     <h1>Welcome Back</h1>
+
     {% if error %}
     <div class="error-msg">{{ error }}</div>
     {% endif %}
+
     <form method="POST" class="auth-form">
+
         <div class="form-group">
-            <input type="text" name="username" placeholder="Username" required autocomplete="off">
+            <input type="text" name="username" placeholder=" " required autocomplete="off">
+            <label>Username</label>
         </div>
+
         <div class="form-group">
-            <input type="password" name="password" placeholder="Password" required autocomplete="off">
+            <input type="password" name="password" id="password" placeholder=" " required autocomplete="off">
+            <label>Password</label>
+            <span class="toggle-password" onclick="togglePassword()">Show</span>
         </div>
-        <button type="submit" class="auth-btn">Sign In to Dashboard</button>
+
+        <button type="submit" class="auth-btn">
+            Sign In to Dashboard
+        </button>
+
     </form>
+
     <div class="auth-links">
-        Don't have an account? <a href="{{ url_for('signup') }}">Create one here</a>
+        Don't have an account?
+        <a href="{{ url_for('signup') }}">Create one here</a>
     </div>
 </div>
+
+<script>
+    function togglePassword() {
+        const passwordField = document.getElementById("password");
+        const toggleText = document.querySelector(".toggle-password");
+
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+            toggleText.textContent = "Hide";
+        } else {
+            passwordField.type = "password";
+            toggleText.textContent = "Show";
+        }
+    }
+</script>
+
 {% endblock %}
