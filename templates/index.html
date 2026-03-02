@@ -30,42 +30,50 @@
     document.addEventListener("DOMContentLoaded", function () {
         const matchesContainer = document.getElementById("matches-container");
 
-        // Example Free API for Cricket Matches (CricAPI/SportRadar etc.)
-        // Note: Replace with an actual working API endpoint and key
-        // We are using a mock URL for demonstration purposes
-        const apiUrl = "https://api.cricapi.com/v1/currentMatches?apikey=YOUR_API_KEY&offset=0";
+        // Simulated API Response
+        let mockMatches = [
+            {
+                id: "m1",
+                name: "India vs Australia, World Test Championship Final",
+                runs: 314,
+                wickets: 4,
+                overs: 82.4,
+                opponent: "AUS 276/10",
+                matchType: "Test",
+                team1: "IND",
+                status: ""
+            },
+            {
+                id: "m2",
+                name: "England vs South Africa, 3rd ODI",
+                runs: 120,
+                wickets: 2,
+                overs: 25.0,
+                opponent: "RSA 250/8",
+                matchType: "ODI",
+                team1: "ENG",
+                status: ""
+            },
+            {
+                id: "m3",
+                name: "Chennai Super Kings vs Mumbai Indians",
+                runs: 150,
+                wickets: 4,
+                overs: 18.2,
+                opponent: "MI 148/9",
+                matchType: "T20",
+                team1: "CSK",
+                status: ""
+            }
+        ];
 
-        // For the sake of this demo, we use mock data if API key is not present.
-        // Feel free to replace the fetch call with the actual API endpoint
-        function fetchMatches() {
-            // Simulated API Response
-            const mockMatches = [
-                {
-                    id: "m1",
-                    name: "India vs Australia, World Test Championship Final",
-                    status: "IND 314/4 (82.4) | AUS 276/10",
-                    matchType: "Test",
-                    teams: ["India", "Australia"]
-                },
-                {
-                    id: "m2",
-                    name: "England vs South Africa, 3rd ODI",
-                    status: "ENG 120/2 (25.0) | RSA 250/8",
-                    matchType: "ODI",
-                    teams: ["England", "South Africa"]
-                },
-                {
-                    id: "m3",
-                    name: "Chennai Super Kings vs Mumbai Indians",
-                    status: "CSK 150/4 (18.2) | MI 148/9",
-                    matchType: "T20",
-                    teams: ["CSK", "MI"]
-                }
-            ];
-
-            matchesContainer.innerHTML = ""; // Clear loading text
+        function renderMatches() {
+            matchesContainer.innerHTML = ""; // Clear content
 
             mockMatches.forEach(match => {
+                // Formatting the status string
+                match.status = `${match.team1} ${match.runs}/${match.wickets} (${match.overs.toFixed(1)}) | ${match.opponent}`;
+
                 const matchCard = document.createElement("div");
                 matchCard.className = "card";
                 matchCard.style.cursor = "pointer";
@@ -76,14 +84,14 @@
                 matchCard.innerHTML = `
                         <div class="live-header" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
                             <div class="live-indicator">
-                                <span style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
+                                <span style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 8px #ef4444;"></span>
                                 LIVE
                             </div>
                             <div class="match-info">${match.matchType}</div>
                         </div>
                         <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">${match.name}</h3>
                         <div class="score-details" style="font-family: 'Outfit', sans-serif;">
-                            <h2 style="font-size: 1.5rem; color: var(--accent-primary);">${match.status}</h2>
+                            <h2 style="font-size: 1.5rem; color: var(--accent-primary); transition: color 0.3s; min-height: 2rem;">${match.status}</h2>
                         </div>
                         <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">Click to view full details</p>
                     `;
@@ -91,8 +99,53 @@
             });
         }
 
-        // Call the fetch function
-        fetchMatches();
+        // Initial render
+        renderMatches();
+
+        // Simulate live updates every 5 seconds
+        setInterval(() => {
+            let updated = false;
+            mockMatches.forEach(match => {
+                // Randomly 40% chance to score
+                if (Math.random() > 0.6) {
+                    const runsScored = Math.floor(Math.random() * 6) + 1; // 1 to 6 runs
+                    match.runs += runsScored;
+                    let balls = parseFloat((match.overs % 1).toFixed(1));
+                    let overInt = Math.floor(match.overs);
+                    balls += 0.1;
+                    if (balls >= 0.6) {
+                        balls = 0;
+                        overInt += 1;
+                    }
+                    match.overs = overInt + balls;
+                    updated = true;
+                } else if (Math.random() > 0.95 && match.wickets < 10) {
+                    // small chance to lose a wicket
+                    match.wickets += 1;
+                    let balls = parseFloat((match.overs % 1).toFixed(1));
+                    let overInt = Math.floor(match.overs);
+                    balls += 0.1;
+                    if (balls >= 0.6) {
+                        balls = 0;
+                        overInt += 1;
+                    }
+                    match.overs = overInt + balls;
+                    updated = true;
+                }
+            });
+
+            if (updated) {
+                renderMatches();
+                // Add a flash effect to indicate update
+                const scores = document.querySelectorAll('.score-details h2');
+                scores.forEach(score => {
+                    score.style.color = '#fff';
+                    setTimeout(() => {
+                        score.style.color = 'var(--accent-primary)';
+                    }, 500);
+                });
+            }
+        }, 5000);
     });
 </script>
 {% endblock %}
