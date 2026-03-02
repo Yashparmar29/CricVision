@@ -1,0 +1,489 @@
+{% extends "base.html" %}
+
+{% block title %}Live Match Details | CricVision{% endblock %}
+
+{% block extra_head %}
+<style>
+    .match-center {
+        max-width: 1200px;
+        margin: 6rem auto 4rem;
+        padding: 0 5%;
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+    }
+
+    @media (max-width: 992px) {
+        .match-center {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .main-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .score-banner {
+        background: var(--bg-panel);
+        backdrop-filter: blur(16px);
+        border: 1px solid var(--border-color);
+        border-radius: 24px;
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    .score-banner::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 6px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+    }
+
+    .teams-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .team-block {
+        text-align: center;
+        flex: 1;
+    }
+
+    .team-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .team-score {
+        font-family: 'Outfit', sans-serif;
+        font-size: 3rem;
+        font-weight: 800;
+        color: var(--text-main);
+        line-height: 1;
+        transition: color 0.3s ease;
+    }
+
+    .highlight-update {
+        color: var(--accent-primary) !important;
+    }
+
+    .team-overs {
+        font-size: 1.1rem;
+        color: var(--text-muted);
+    }
+
+    .vs-badge {
+        background: rgba(255, 255, 255, 0.1);
+        padding: 1rem;
+        border-radius: 50%;
+        font-weight: 800;
+        color: var(--text-muted);
+        font-size: 1.2rem;
+    }
+
+    .win-probability {
+        margin-top: 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 50px;
+        height: 12px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .prob-bar {
+        height: 100%;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        width: 65%;
+        /* Dynamic */
+        transition: width 1s ease-in-out;
+        border-radius: 50px;
+    }
+
+    .prob-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+        font-weight: 600;
+    }
+
+    .side-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .commentary-section {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+        max-height: 600px;
+        overflow-y: auto;
+    }
+
+    .commentary-section::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .commentary-section::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 4px;
+    }
+
+    .section-head {
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .comment-item {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+        animation: slideInDown 0.4s ease forwards;
+    }
+
+    @keyframes slideInDown {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .over-badge {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent-primary);
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        height: max-content;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .comment-text {
+        font-size: 0.95rem;
+        color: #cbd5e1;
+        line-height: 1.5;
+    }
+
+    .comment-text strong {
+        color: var(--text-main);
+    }
+
+    .event-boundary {
+        border-left: 3px solid #f59e0b;
+        padding-left: 1rem;
+    }
+
+    .event-wicket {
+        border-left: 3px solid #ef4444;
+        padding-left: 1rem;
+    }
+
+    /* Current Batters & Bowler */
+    .players-status {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 1.5rem;
+    }
+
+    .player-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .player-row:last-child {
+        border-bottom: none;
+    }
+
+    .p-name {
+        font-weight: 500;
+    }
+
+    .p-score {
+        font-family: 'Outfit', sans-serif;
+        font-weight: 700;
+        color: var(--accent-primary);
+    }
+
+    .p-detail {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="match-center">
+    <div class="main-panel">
+        <div class="score-banner">
+            <div class="live-indicator" style="margin-bottom: 1rem; justify-content: center;">
+                <span
+                    style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 8px #ef4444;"></span>
+                LIVE MATCH CENTER - TEST MATCH
+            </div>
+
+            <div class="teams-container">
+                <div class="team-block" id="team1-block">
+                    <div class="team-name">INDIA</div>
+                    <div class="team-score" id="team1-score">314/4</div>
+                    <div class="team-overs" id="team1-overs">82.4 Overs</div>
+                </div>
+
+                <div class="vs-badge">VS</div>
+
+                <div class="team-block" style="opacity: 0.6;">
+                    <div class="team-name">AUSTRALIA</div>
+                    <div class="team-score">276/10</div>
+                    <div class="team-overs">1st Innings</div>
+                </div>
+            </div>
+
+            <div style="margin-top: 2rem;">
+                <div style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-muted); text-align: center;">
+                    Live Win Predictor</div>
+                <div class="win-probability">
+                    <div class="prob-bar" id="prob-bar"></div>
+                </div>
+                <div class="prob-labels">
+                    <span id="prob-t1">IND 65%</span>
+                    <span id="prob-t2">AUS 35%</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="players-status">
+            <h3 class="section-head">Current Players</h3>
+            <div style="margin-bottom: 1rem;">
+                <div
+                    style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+                    Batters</div>
+                <div class="player-row">
+                    <div class="p-name">V. Kohli <span style="color:var(--accent-primary)">*</span></div>
+                    <div style="text-align: right;">
+                        <span class="p-score" id="bat1-score">82</span>
+                        <div class="p-detail" id="bat1-balls">(134)</div>
+                    </div>
+                </div>
+                <div class="player-row">
+                    <div class="p-name">R. Pant</div>
+                    <div style="text-align: right;">
+                        <span class="p-score" id="bat2-score">45</span>
+                        <div class="p-detail" id="bat2-balls">(38)</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <div
+                    style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+                    Bowler</div>
+                <div class="player-row">
+                    <div class="p-name">P. Cummins</div>
+                    <div style="text-align: right;">
+                        <span class="p-score" id="bowl-figs">2/74</span>
+                        <div class="p-detail" id="bowl-overs">18.4 overs</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="side-panel">
+        <div class="commentary-section" id="commentary-box">
+            <h3 class="section-head">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                </svg>
+                Live Commentary
+            </h3>
+
+            <div id="comments-container">
+                <div class="comment-item event-boundary">
+                    <div class="over-badge">82.4</div>
+                    <div class="comment-text">
+                        <strong>Cummins to Kohli, FOUR!</strong> What a shot! Glorious cover drive. Just leans into it
+                        and the ball races away to the boundary.
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="over-badge">82.3</div>
+                    <div class="comment-text">
+                        <strong>Cummins to Kohli, no run.</strong> Pitched up outside off, watchfully left alone.
+                    </div>
+                </div>
+                <div class="comment-item">
+                    <div class="over-badge">82.2</div>
+                    <div class="comment-text">
+                        <strong>Cummins to Kohli, 2 runs.</strong> Tucked off the pads through square leg for a couple.
+                        Good running.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // State variables
+        let totalRuns = 314;
+        let wickets = 4;
+        let overs = 82.4;
+        let bat1Runs = 82;
+        let bat1Balls = 134;
+        let bat2Runs = 45;
+        let bat2Balls = 38;
+        let bowlerRunsEscaped = 74;
+
+        let strikeFlag = 1; // 1 for bat1, 2 for bat2
+
+        const possibleEvents = [
+            { runs: 0, text: "Solid defense. No run.", type: "dot" },
+            { runs: 0, text: "Left alone outside off stump.", type: "dot" },
+            { runs: 1, text: "Pushed to mid-off for a quick single.", type: "single" },
+            { runs: 1, text: "Tucked away to square leg for one.", type: "single" },
+            { runs: 2, text: "Driven nicely through the covers, they run hard for two.", type: "double" },
+            { runs: 4, text: "FOUR! Brilliant timing. Races away to the boundary!", type: "boundary", class: "event-boundary" },
+            { runs: 6, text: "SIX! Massive strike over deep mid-wicket. Out of the ground!", type: "boundary", class: "event-boundary" }
+        ];
+
+        const wicketEvents = [
+            { text: "OUT! Edged and taken! Beautiful delivery that finds the outside edge.", type: "wicket", class: "event-wicket" },
+            { text: "BOWLED HIM! Knocked him completely over. Stumps shattered!", type: "wicket", class: "event-wicket" }
+        ];
+
+        const scoreEl = document.getElementById("team1-score");
+        const overEl = document.getElementById("team1-overs");
+        const bat1ScoreEl = document.getElementById("bat1-score");
+        const bat1BallsEl = document.getElementById("bat1-balls");
+        const bat2ScoreEl = document.getElementById("bat2-score");
+        const bat2BallsEl = document.getElementById("bat2-balls");
+        const bowlerFigsEl = document.getElementById("bowl-figs");
+        const bowlerOversEl = document.getElementById("bowl-overs");
+        const commentsContainer = document.getElementById("comments-container");
+        const probBar = document.getElementById("prob-bar");
+        const probT1 = document.getElementById("prob-t1");
+        const probT2 = document.getElementById("prob-t2");
+
+        let probValue = 65;
+
+        // Simulator loop
+        setInterval(() => {
+            // Update Over Count
+            let balls = parseFloat((overs % 1).toFixed(1));
+            let overInt = Math.floor(overs);
+            balls += 0.1;
+
+            let isWicket = Math.random() > 0.95 && wickets < 10;
+            let event;
+            let runsScored = 0;
+
+            if (isWicket) {
+                event = wicketEvents[Math.floor(Math.random() * wicketEvents.length)];
+                wickets += 1;
+                // reset batter at strike
+                if (strikeFlag === 1) {
+                    bat1Runs = 0;
+                    bat1Balls = 0;
+                } else {
+                    bat2Runs = 0;
+                    bat2Balls = 0;
+                }
+            } else {
+                event = possibleEvents[Math.floor(Math.random() * possibleEvents.length)];
+                runsScored = event.runs;
+                totalRuns += runsScored;
+                bowlerRunsEscaped += runsScored;
+
+                if (strikeFlag === 1) {
+                    bat1Runs += runsScored;
+                    bat1Balls += 1;
+                } else {
+                    bat2Runs += runsScored;
+                    bat2Balls += 1;
+                }
+
+                // Swap strike on 1s and 3s
+                if (runsScored === 1 || runsScored === 3) {
+                    strikeFlag = strikeFlag === 1 ? 2 : 1;
+                }
+            }
+
+            if (balls >= 0.6) {
+                balls = 0;
+                overInt += 1;
+                strikeFlag = strikeFlag === 1 ? 2 : 1; // Swap strike at end of over
+            }
+            overs = overInt + balls;
+
+            // DOM Updates
+            scoreEl.innerText = `${totalRuns}/${wickets}`;
+            scoreEl.classList.add("highlight-update");
+            setTimeout(() => scoreEl.classList.remove("highlight-update"), 500);
+
+            overEl.innerText = `${overs.toFixed(1)} Overs`;
+            bat1ScoreEl.innerText = bat1Runs;
+            bat1BallsEl.innerText = `(${bat1Balls})`;
+            bat2ScoreEl.innerText = bat2Runs;
+            bat2BallsEl.innerText = `(${bat2Balls})`;
+
+            bowlerFigsEl.innerText = `2/${bowlerRunsEscaped}`;
+
+            let bowlerBalls = parseFloat((overs % 1).toFixed(1));
+            let bowlerTotal = 18 + bowlerBalls;
+            bowlerOversEl.innerText = `${bowlerTotal.toFixed(1)} overs`;
+
+            // Fluctuating Win Prob
+            let probShift = (Math.random() * 4) - 2; // -2 to +2 shift
+            if (runsScored >= 4) probShift += 2;
+            if (isWicket) probShift -= 5;
+
+            probValue = Math.max(10, Math.min(90, probValue + probShift));
+            probBar.style.width = `${probValue}%`;
+            probT1.innerText = `IND ${Math.round(probValue)}%`;
+            probT2.innerText = `AUS ${Math.round(100 - probValue)}%`;
+
+            // Commentary Update
+            const batterName = strikeFlag === 1 ? "Kohli" : "Pant";
+            const commentHTML = `
+                <div class="comment-item ${event.class || ''}">
+                    <div class="over-badge">${overs.toFixed(1)}</div>
+                    <div class="comment-text">
+                        <strong>Cummins to ${batterName}, ${runsScored || (isWicket ? 'OUT' : 'no run')}.</strong> ${event.text}
+                    </div>
+                </div>
+            `;
+            commentsContainer.insertAdjacentHTML('afterbegin', commentHTML);
+
+        }, 4500); // 4.5 seconds per ball
+    });
+</script>
+{% endblock %}

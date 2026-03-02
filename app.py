@@ -27,6 +27,10 @@ def dashboard():
         return redirect(url_for('login'))
     return render_template('dashboard.html')
 
+@app.route('/match/<match_id>')
+def match_details(match_id):
+    return render_template('match.html', match_id=match_id)
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
