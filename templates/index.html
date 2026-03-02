@@ -1,88 +1,98 @@
 {% extends "base.html" %}
 {% block content %}
 <section class="hero">
-        <div class="flying-bat">🏏</div>
-        <div class="hero-content">
-            <div class="tagline">Next-Gen Biomechanical Analysis</div>
-            <h1>Revolutionize Your Cricket Technique</h1>
-            <p>Upload your cricket shots, get instant AI-powered classification, and uncover deep biomechanical insights
-                to perfect your game.</p>
-            <a href="#upload" class="btn-large">
-                Start Analyzing
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                    stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M5 12h14M12 5l7 7-7 7" />
-                </svg>
-            </a>
-        </div>
-    </section>
+    <div class="flying-bat">🏏</div>
+    <div class="hero-content">
+        <div class="tagline">Next-Gen Biomechanical Analysis</div>
+        <h1>Revolutionize Your Cricket Technique</h1>
+        <p>Upload your cricket shots, get instant AI-powered classification, and uncover deep biomechanical insights
+            to perfect your game.</p>
+        <a href="#upload" class="btn-large">
+            Start Analyzing
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h14M12 5l7 7-7 7" />
+            </svg>
+        </a>
+    </div>
+</section>
 
 <div class="container">
-    <div class="live-dash">
-            <div class="live-header">
-                <div class="live-indicator">
-                    <span
-                        style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
-                    LIVE
-                </div>
-                <div class="match-info">World Test Championship Final • Day 3</div>
-            </div>
-
-            <div class="score-row">
-                <div class="team-score">
-                    <div class="team-flag"></div>
-                    <div class="score-details">
-                        <h2>IND 314/4 <span>(82.4)</span></h2>
-                        <span class="run-rate">CRR: 3.81</span>
-                    </div>
-                </div>
-                <!-- Optional: Second team score for context if needed, but standard live usually shows batting team prominent -->
-                <div class="team-score" style="opacity: 0.6;">
-                    <div class="team-flag aus"></div>
-                    <div class="score-details" style="text-align:right;">
-                        <h2 style="font-size: 1.5rem;">AUS 276/10</h2>
-                        <span class="run-rate">1st Innings</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="current-players">
-                <div>
-                    <div class="player-stat">
-                        <span class="player-name">V Kohli <span class="striker-icon">🏏</span></span>
-                        <span class="player-runs">84 (142)</span>
-                    </div>
-                    <div class="player-stat">
-                        <span class="player-name">R Pant</span>
-                        <span class="player-runs">42 (38)</span>
-                    </div>
-                </div>
-                <div>
-                    <div class="player-stat">
-                        <span class="player-name">P Cummins</span>
-                        <span class="player-runs">2-68 (18.4)</span>
-                    </div>
-                    <div class="player-stat">
-                        <span class="player-name">N Lyon</span>
-                        <span class="player-runs">1-82 (24)</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="recent-overs">
-                <span class="recent-label">Recent Balls</span>
-                <div class="balls">
-                    <div class="ball">0</div>
-                    <div class="ball">1</div>
-                    <div class="ball boundary">4</div>
-                    <div class="ball">0</div>
-                    <div class="ball six">6</div>
-                    <div style="margin: 0 5px; color: var(--text-muted);">|</div>
-                    <div class="ball wicket">W</div>
-                    <div class="ball">0</div>
-                    <div class="ball">2</div>
-                </div>
-            </div>
+    <div id="matches-container" class="cards">
+        <!-- Live matches will be populated here -->
+        <div style="text-align: center; width: 100%; color: var(--text-muted);">
+            <div class="loading-spinner"></div> Loading live matches...
         </div>
+    </div>
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const matchesContainer = document.getElementById("matches-container");
+
+        // Example Free API for Cricket Matches (CricAPI/SportRadar etc.)
+        // Note: Replace with an actual working API endpoint and key
+        // We are using a mock URL for demonstration purposes
+        const apiUrl = "https://api.cricapi.com/v1/currentMatches?apikey=YOUR_API_KEY&offset=0";
+
+        // For the sake of this demo, we use mock data if API key is not present.
+        // Feel free to replace the fetch call with the actual API endpoint
+        function fetchMatches() {
+            // Simulated API Response
+            const mockMatches = [
+                {
+                    id: "m1",
+                    name: "India vs Australia, World Test Championship Final",
+                    status: "IND 314/4 (82.4) | AUS 276/10",
+                    matchType: "Test",
+                    teams: ["India", "Australia"]
+                },
+                {
+                    id: "m2",
+                    name: "England vs South Africa, 3rd ODI",
+                    status: "ENG 120/2 (25.0) | RSA 250/8",
+                    matchType: "ODI",
+                    teams: ["England", "South Africa"]
+                },
+                {
+                    id: "m3",
+                    name: "Chennai Super Kings vs Mumbai Indians",
+                    status: "CSK 150/4 (18.2) | MI 148/9",
+                    matchType: "T20",
+                    teams: ["CSK", "MI"]
+                }
+            ];
+
+            matchesContainer.innerHTML = ""; // Clear loading text
+
+            mockMatches.forEach(match => {
+                const matchCard = document.createElement("div");
+                matchCard.className = "card";
+                matchCard.style.cursor = "pointer";
+                matchCard.onclick = () => {
+                    window.location.href = `/match/${match.id}`;
+                };
+
+                matchCard.innerHTML = `
+                        <div class="live-header" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            <div class="live-indicator">
+                                <span style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%;"></span>
+                                LIVE
+                            </div>
+                            <div class="match-info">${match.matchType}</div>
+                        </div>
+                        <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">${match.name}</h3>
+                        <div class="score-details" style="font-family: 'Outfit', sans-serif;">
+                            <h2 style="font-size: 1.5rem; color: var(--accent-primary);">${match.status}</h2>
+                        </div>
+                        <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">Click to view full details</p>
+                    `;
+                matchesContainer.appendChild(matchCard);
+            });
+        }
+
+        // Call the fetch function
+        fetchMatches();
+    });
+</script>
 {% endblock %}
