@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}CricVision AI - Next-Gen Cricket Analytics{% endblock %}</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap"
+        rel="stylesheet">
     <style>
-
         :root {
             --bg-base: #0a0f1c;
             --bg-panel: rgba(20, 27, 45, 0.7);
@@ -663,34 +665,167 @@
                 grid-template-columns: 1fr;
             }
         }
-    
+
         /* New animations and forms */
-        .fade-in { animation: fadeInPage 0.5s ease-out forwards; }
-        @keyframes fadeInPage { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        .auth-container { max-width: 450px; margin: 8rem auto 4rem; background: var(--bg-panel); backdrop-filter: blur(16px); padding: 3rem 2rem; border-radius: 20px; border: 1px solid var(--border-color); box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5); position: relative; overflow: hidden; }
-        .auth-container::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 50%); z-index: 0; pointer-events: none; }
-        .auth-container > * { position: relative; z-index: 1; }
-        .auth-container h1 { text-align: center; margin-bottom: 2rem; font-size: 2.2rem; background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .auth-form { display: flex; flex-direction: column; gap: 1.5rem; }
-        .form-group { position: relative; }
-        .form-group input { width: 100%; padding: 1rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--text-main); font-size: 1rem; transition: all 0.3s; box-sizing: border-box; }
-        .form-group input:focus { outline: none; border-color: var(--accent-primary); box-shadow: 0 0 15px var(--accent-glow); background: rgba(0,0,0,0.5); }
-        .auth-btn { padding: 1rem; background: linear-gradient(135deg, var(--accent-primary), #059669); color: white; border: none; border-radius: 12px; font-weight: 600; font-size: 1.1rem; cursor: pointer; transition: all 0.3s; box-shadow: 0 4px 15px var(--accent-glow); margin-top: 1rem; }
-        .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6); }
-        .auth-links { text-align: center; margin-top: 1.5rem; color: var(--text-muted); }
-        .auth-links a { color: var(--accent-primary); text-decoration: none; font-weight: 600; transition: color 0.3s; }
-        .auth-links a:hover { color: var(--accent-secondary); text-decoration: underline; }
-        .error-msg { background: rgba(239, 68, 68, 0.1); color: #fca5a5; padding: 1rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.2); margin-bottom: 1.5rem; text-align: center; font-weight: 500; }
-        
-        .page-header { text-align: center; padding: 8rem 2rem 4rem; }
-        .page-header h1 { font-size: 3rem; margin-bottom: 1rem; background: linear-gradient(135deg, var(--text-main), var(--text-muted)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .page-header p { color: var(--text-muted); font-size: 1.2rem; max-width: 600px; margin: 0 auto; }
-        
-        main { min-height: 80vh; }
+        .fade-in {
+            animation: fadeInPage 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeInPage {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .auth-container {
+            max-width: 450px;
+            margin: 8rem auto 4rem;
+            background: var(--bg-panel);
+            backdrop-filter: blur(16px);
+            padding: 3rem 2rem;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .auth-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(16, 185, 129, 0.1) 0%, transparent 50%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .auth-container>* {
+            position: relative;
+            z-index: 1;
+        }
+
+        .auth-container h1 {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 2.2rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .auth-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 1rem;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: var(--text-main);
+            font-size: 1rem;
+            transition: all 0.3s;
+            box-sizing: border-box;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-glow);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .auth-btn {
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent-primary), #059669);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px var(--accent-glow);
+            margin-top: 1rem;
+        }
+
+        .auth-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: var(--text-muted);
+        }
+
+        .auth-links a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 600;
+            transition: color 0.3s;
+        }
+
+        .auth-links a:hover {
+            color: var(--accent-secondary);
+            text-decoration: underline;
+        }
+
+        .error-msg {
+            background: rgba(239, 68, 68, 0.1);
+            color: #fca5a5;
+            padding: 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .page-header {
+            text-align: center;
+            padding: 8rem 2rem 4rem;
+        }
+
+        .page-header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-main), var(--text-muted));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .page-header p {
+            color: var(--text-muted);
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        main {
+            min-height: 80vh;
+        }
     </style>
     {% block extra_head %}{% endblock %}
 </head>
+
 <body class="fade-in">
     <header>
         <div class="logo">
@@ -701,8 +836,10 @@
             <a href="{{ url_for('features') }}">Features</a>
             {% if logged_in %}
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
-            <span style="color: var(--accent-primary);">Hi, {{ username }}</span>
-            <a href="{{ url_for('logout') }}" class="nav-btn" style="background: rgba(255,255,255,0.1); box-shadow: none;">Logout</a>
+            <a href="{{ url_for('profile') }}"
+                style="color: var(--accent-primary); text-decoration: none; font-weight: 500;">Hi, {{ username }}</a>
+            <a href="{{ url_for('logout') }}" class="nav-btn"
+                style="background: rgba(255,255,255,0.1); box-shadow: none;">Logout</a>
             {% else %}
             <a href="{{ url_for('login') }}">Login</a>
             <a href="{{ url_for('signup') }}" class="nav-btn">Sign Up</a>
@@ -711,7 +848,7 @@
     </header>
 
     <main>
-    {% block content %}{% endblock %}
+        {% block content %}{% endblock %}
     </main>
 
     <footer>
@@ -720,4 +857,5 @@
 
     {% block scripts %}{% endblock %}
 </body>
+
 </html>
