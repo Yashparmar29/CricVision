@@ -1,151 +1,279 @@
 {% extends "base.html" %}
 {% block content %}
+
+<style>
+    /* ===== HERO SECTION ===== */
+    .hero {
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+        background: radial-gradient(circle at bottom, #0b1120 20%, #020617 80%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    /* ===== FLYING DOTS CONTAINER ===== */
+    .particles {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        top: 0;
+        left: 0;
+        z-index: 0;
+    }
+
+    .particle {
+        position: absolute;
+        width: 6px;
+        height: 6px;
+        background: #06b6d4;
+        border-radius: 50%;
+        opacity: 0.6;
+        animation: floatUp linear infinite;
+        box-shadow: 0 0 10px #06b6d4;
+    }
+
+    @keyframes floatUp {
+        from {
+            transform: translateY(100vh) scale(0.5);
+            opacity: 0;
+        }
+
+        30% {
+            opacity: 0.7;
+        }
+
+        to {
+            transform: translateY(-10vh) scale(1);
+            opacity: 0;
+        }
+    }
+
+    /* ===== Stadium Glow ===== */
+    .hero::before {
+        content: "";
+        position: absolute;
+        width: 120%;
+        height: 120%;
+        background: radial-gradient(circle at 50% 100%, rgba(0, 255, 255, 0.15), transparent 60%);
+        animation: stadiumGlow 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes stadiumGlow {
+        from {
+            opacity: 0.5;
+        }
+
+        to {
+            opacity: 1;
+        }
+    }
+
+    /* ===== BATSMAN ===== */
+    .batsman {
+        position: absolute;
+        bottom: 90px;
+        left: 12%;
+        width: 120px;
+        height: 200px;
+        background: linear-gradient(180deg, #0ff, #2563eb);
+        clip-path: polygon(45% 0%, 55% 0%, 60% 30%, 65% 70%, 75% 100%, 25% 100%, 35% 70%, 40% 30%);
+        transform-origin: bottom center;
+        animation: proSwing 1.4s cubic-bezier(.55, .06, .68, .19) forwards;
+        box-shadow: 0 0 25px #06b6d4;
+        z-index: 2;
+    }
+
+    @keyframes proSwing {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        30% {
+            transform: rotate(-25deg);
+        }
+
+        70% {
+            transform: rotate(35deg);
+        }
+
+        100% {
+            transform: rotate(0deg);
+        }
+    }
+
+    /* ===== BALL ===== */
+    .ball {
+        position: absolute;
+        bottom: 160px;
+        left: 18%;
+        width: 16px;
+        height: 16px;
+        background: #ff3b3b;
+        border-radius: 50%;
+        box-shadow: 0 0 20px #ff3b3b;
+        animation: ballArc 1.4s ease forwards;
+        z-index: 2;
+    }
+
+    @keyframes ballArc {
+        0% {
+            transform: translate(0, 0);
+            opacity: 1;
+        }
+
+        100% {
+            transform: translate(900px, -400px);
+            opacity: 0;
+        }
+    }
+
+    /* ===== SHOCKWAVE ===== */
+    .shockwave {
+        position: absolute;
+        bottom: 160px;
+        left: 18%;
+        width: 20px;
+        height: 20px;
+        border-radius: 50%;
+        border: 2px solid #00ffff;
+        animation: wave 0.8s ease-out forwards;
+        z-index: 2;
+    }
+
+    @keyframes wave {
+        from {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        to {
+            transform: scale(8);
+            opacity: 0;
+        }
+    }
+
+    /* ===== HERO CONTENT ===== */
+    .hero-content {
+        text-align: center;
+        max-width: 850px;
+        opacity: 0;
+        transform: translateY(60px);
+        filter: blur(10px);
+        animation: revealHero 1.2s ease 1.6s forwards;
+        z-index: 3;
+        position: relative;
+    }
+
+    @keyframes revealHero {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+    }
+
+    /* ===== CARDS ===== */
+    .cards {
+        opacity: 0;
+        transform: translateY(50px);
+        animation: cardsReveal 1s ease 2s forwards;
+    }
+
+    @keyframes cardsReveal {
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>
+
 <section class="hero">
-    <div class="flying-bat">🏏</div>
+
+    <!-- Flying Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="batsman"></div>
+    <div class="ball"></div>
+    <div class="shockwave"></div>
+
     <div class="hero-content">
         <div class="tagline">Next-Gen Biomechanical Analysis</div>
         <h1>Revolutionize Your Cricket Technique</h1>
-        <p>Upload your cricket shots, get instant AI-powered classification, and uncover deep biomechanical insights
-            to perfect your game.</p>
+        <p>
+            Upload your cricket shots, get instant AI-powered classification,
+            and uncover deep biomechanical insights to perfect your game.
+        </p>
         <a href="#upload" class="btn-large">
             Start Analyzing
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                stroke-linecap="round" stroke-linejoin="round">
-                <path d="M5 12h14M12 5l7 7-7 7" />
-            </svg>
         </a>
     </div>
+
 </section>
 
 <div class="container">
-    <div id="matches-container" class="cards">
-        <!-- Live matches will be populated here -->
-        <div style="text-align: center; width: 100%; color: var(--text-muted);">
-            <div class="loading-spinner"></div> Loading live matches...
-        </div>
-    </div>
+    <div id="matches-container" class="cards"></div>
 </div>
 
 <script>
     document.addEventListener("DOMContentLoaded", function () {
+
+        /* ===== CREATE FLYING DOTS ===== */
+        const particleContainer = document.getElementById("particles");
+
+        for (let i = 0; i < 40; i++) {
+            const dot = document.createElement("div");
+            dot.classList.add("particle");
+            dot.style.left = Math.random() * 100 + "%";
+            dot.style.animationDuration = (5 + Math.random() * 5) + "s";
+            dot.style.width = dot.style.height = (3 + Math.random() * 5) + "px";
+            particleContainer.appendChild(dot);
+        }
+
+        /* ===== LIVE MATCH LOGIC ===== */
         const matchesContainer = document.getElementById("matches-container");
 
-        // Simulated API Response
         let mockMatches = [
-            {
-                id: "m1",
-                name: "India vs Australia, World Test Championship Final",
-                runs: 314,
-                wickets: 4,
-                overs: 82.4,
-                opponent: "AUS 276/10",
-                matchType: "Test",
-                team1: "IND",
-                status: ""
-            },
-            {
-                id: "m2",
-                name: "England vs South Africa, 3rd ODI",
-                runs: 120,
-                wickets: 2,
-                overs: 25.0,
-                opponent: "RSA 250/8",
-                matchType: "ODI",
-                team1: "ENG",
-                status: ""
-            },
-            {
-                id: "m3",
-                name: "Chennai Super Kings vs Mumbai Indians",
-                runs: 150,
-                wickets: 4,
-                overs: 18.2,
-                opponent: "MI 148/9",
-                matchType: "T20",
-                team1: "CSK",
-                status: ""
-            }
+            { id: "m1", name: "India vs Australia, World Test Championship Final", runs: 314, wickets: 4, overs: 82.4, opponent: "AUS 276/10", matchType: "Test", team1: "IND" },
+            { id: "m2", name: "England vs South Africa, 3rd ODI", runs: 120, wickets: 2, overs: 25.0, opponent: "RSA 250/8", matchType: "ODI", team1: "ENG" },
+            { id: "m3", name: "Chennai Super Kings vs Mumbai Indians", runs: 150, wickets: 4, overs: 18.2, opponent: "MI 148/9", matchType: "T20", team1: "CSK" }
         ];
 
         function renderMatches() {
-            matchesContainer.innerHTML = ""; // Clear content
-
+            matchesContainer.innerHTML = "";
             mockMatches.forEach(match => {
-                // Formatting the status string
-                match.status = `${match.team1} ${match.runs}/${match.wickets} (${match.overs.toFixed(1)}) | ${match.opponent}`;
-
-                const matchCard = document.createElement("div");
-                matchCard.className = "card";
-                matchCard.style.cursor = "pointer";
-                matchCard.onclick = () => {
-                    window.location.href = `/match/${match.id}`;
-                };
-
-                matchCard.innerHTML = `
-                        <div class="live-header" style="margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
-                            <div class="live-indicator">
-                                <span style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 8px #ef4444;"></span>
-                                LIVE
-                            </div>
-                            <div class="match-info">${match.matchType}</div>
-                        </div>
-                        <h3 style="font-size: 1.2rem; margin-bottom: 1rem;">${match.name}</h3>
-                        <div class="score-details" style="font-family: 'Outfit', sans-serif;">
-                            <h2 style="font-size: 1.5rem; color: var(--accent-primary); transition: color 0.3s; min-height: 2rem;">${match.status}</h2>
-                        </div>
-                        <p style="margin-top: 1rem; color: var(--text-muted); font-size: 0.9rem;">Click to view full details</p>
-                    `;
-                matchesContainer.appendChild(matchCard);
+                const status = `${match.team1} ${match.runs}/${match.wickets} (${match.overs.toFixed(1)}) | ${match.opponent}`;
+                const card = document.createElement("div");
+                card.className = "card";
+                card.style.cursor = "pointer";
+                card.onclick = () => { window.location.href = `/match/${match.id}`; };
+                card.innerHTML = `
+                <div style="display:flex; justify-content:space-between; margin-bottom:1rem;">
+                    <span style="color:#ef4444;">● LIVE</span>
+                    <span>${match.matchType}</span>
+                </div>
+                <h3>${match.name}</h3>
+                <h2 style="color:var(--accent-primary); margin-top:1rem;">${status}</h2>
+                <p style="color:var(--text-muted); margin-top:1rem;">Click to view full details</p>
+            `;
+                matchesContainer.appendChild(card);
             });
         }
 
-        // Initial render
         renderMatches();
 
-        // Simulate live updates every 5 seconds
         setInterval(() => {
-            let updated = false;
             mockMatches.forEach(match => {
-                // Randomly 40% chance to score
                 if (Math.random() > 0.6) {
-                    const runsScored = Math.floor(Math.random() * 6) + 1; // 1 to 6 runs
-                    match.runs += runsScored;
-                    let balls = parseFloat((match.overs % 1).toFixed(1));
-                    let overInt = Math.floor(match.overs);
-                    balls += 0.1;
-                    if (balls >= 0.6) {
-                        balls = 0;
-                        overInt += 1;
-                    }
-                    match.overs = overInt + balls;
-                    updated = true;
-                } else if (Math.random() > 0.95 && match.wickets < 10) {
-                    // small chance to lose a wicket
-                    match.wickets += 1;
-                    let balls = parseFloat((match.overs % 1).toFixed(1));
-                    let overInt = Math.floor(match.overs);
-                    balls += 0.1;
-                    if (balls >= 0.6) {
-                        balls = 0;
-                        overInt += 1;
-                    }
-                    match.overs = overInt + balls;
-                    updated = true;
+                    match.runs += Math.floor(Math.random() * 6) + 1;
                 }
             });
-
-            if (updated) {
-                renderMatches();
-                // Add a flash effect to indicate update
-                const scores = document.querySelectorAll('.score-details h2');
-                scores.forEach(score => {
-                    score.style.color = '#fff';
-                    setTimeout(() => {
-                        score.style.color = 'var(--accent-primary)';
-                    }, 500);
-                });
-            }
+            renderMatches();
         }, 5000);
+
     });
 </script>
+
 {% endblock %}
