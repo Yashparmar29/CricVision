@@ -831,9 +831,10 @@
         <div class="logo">
             <span>🏏</span> CricVision AI
         </div>
-        <nav>
+<nav>
             <a href="{{ url_for('index') }}">Home</a>
             <a href="{{ url_for('features') }}">Features</a>
+            <a href="{{ url_for('matches') }}">Matches</a>
             {% if logged_in %}
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
             <a href="{{ url_for('profile') }}"

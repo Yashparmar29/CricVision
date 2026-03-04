@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import cv2
 import os
+import requests
 from src.preprocess import extract_landmarks
 from src.classify import classify_shot
 
@@ -14,6 +15,86 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 
 db = SQLAlchemy(app)
+
+# Match data structure
+MATCH_DATA = {
+    "indian": [
+        {
+            "id": "ipl-2024-rcb-vs-mi",
+            "name": "IPL 2024",
+            "team1": {"name": "RCB", "short": "RCB", "score": "185/6", "overs": "19.2", "flag": "#d32f2f"},
+            "team2": {"name": "Mumbai Indians", "short": "MI", "score": "188/5", "overs": "19.1", "flag": "#004ba0"},
+            "status": "MI won by 5 wickets",
+            "venue": "M Chinnaswamy Stadium, Bengaluru",
+            "match_type": "T20"
+        },
+        {
+            "id": "ipl-2024-csk-vs-dc",
+            "name": "IPL 2024",
+            "team1": {"name": "Chennai Super Kings", "short": "CSK", "score": "167/8", "overs": "20", "flag": "#fdd835"},
+            "team2": {"name": "Delhi Capitals", "short": "DC", "score": "140/10", "overs": "17.4", "flag": "#004ba0"},
+            "status": "CSK won by 27 runs",
+            "venue": "MA Chidambaram Stadium, Chennai",
+            "match_type": "T20"
+        },
+        {
+            "id": "ranji-2024-mumbai-vs-bengal",
+            "name": "Ranji Trophy 2024",
+            "team1": {"name": "Mumbai", "short": "MUM", "score": "312/3", "overs": "85", "flag": "#004ba0"},
+            "team2": {"name": "Bengal", "short": "BEN", "score": "275/10", "overs": "78.2", "flag": "#ff6f00"},
+            "status": "Day 2 - Mumbai lead by 37 runs",
+            "venue": "Wankhede Stadium, Mumbai",
+            "match_type": "Test"
+        },
+        {
+            "id": "ipl-2024-srh-vs-kkr",
+            "name": "IPL 2024",
+            "team1": {"name": "Sunrisers Hyderabad", "short": "SRH", "score": "201/7", "overs": "20", "flag": "#ff6f00"},
+            "team2": {"name": "Kolkata Knight Riders", "short": "KKR", "score": "206/4", "overs": "18.5", "flag": "#4a148c"},
+            "status": "KKR won by 6 wickets",
+            "venue": "Rajiv Gandhi International Stadium, Hyderabad",
+            "match_type": "T20"
+        }
+    ],
+    "international": [
+        {
+            "id": "wtc-2023-24-ind-vs-aus",
+            "name": "WTC Final 2023-24",
+            "team1": {"name": "India", "short": "IND", "score": "314/4", "overs": "82.4", "flag": "#138808"},
+            "team2": {"name": "Australia", "short": "AUS", "score": "276/10", "overs": "89.1", "flag": "#00008B"},
+            "status": "Day 3 - India lead by 38 runs",
+            "venue": "The Oval, London",
+            "match_type": "Test"
+        },
+        {
+            "id": "t20-wc-2024-ind-vs-eng",
+            "name": "T20 World Cup 2024",
+            "team1": {"name": "India", "short": "IND", "score": "171/7", "overs": "20", "flag": "#138808"},
+            "team2": {"name": "England", "short": "ENG", "score": "172/3", "overs": "17.2", "flag": "#012169"},
+            "status": "England won by 7 wickets",
+            "venue": "Providence Stadium, Guyana",
+            "match_type": "T20"
+        },
+        {
+            "id": "odi-wc-2023-ind-vs-nz",
+            "name": "Cricket World Cup 2023",
+            "team1": {"name": "India", "short": "IND", "score": "397/4", "overs": "50", "flag": "#138808"},
+            "team2": {"name": "New Zealand", "short": "NZ", "score": "401/5", "overs": "48.5", "flag": "#000000"},
+            "status": "New Zealand won by 5 wickets",
+            "venue": "Dharamsala Stadium, Dharamsala",
+            "match_type": "ODI"
+        },
+        {
+            "id": "ashes-2023-aus-vs-eng",
+            "name": "Ashes 2023",
+            "team1": {"name": "Australia", "short": "AUS", "score": "386/8", "overs": "93", "flag": "#00008B"},
+            "team2": {"name": "England", "short": "ENG", "score": "320/10", "overs": "75.1", "flag": "#012169"},
+            "status": "Day 3 - Australia lead by 66 runs",
+            "venue": "Old Trafford, Manchester",
+            "match_type": "Test"
+        }
+    ]
+}
 
 class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -53,9 +134,68 @@ def profile():
         return redirect(url_for('login'))
     return render_template('profile.html', user=user)
 
+@app.route('/matches')
+def matches():
+    """Page to select and view matches"""
+    return render_template('matches.html', matches=MATCH_DATA)
+
 @app.route('/match/<match_id>')
 def match_details(match_id):
-    return render_template('match.html', match_id=match_id)
+    """Get specific match details"""
+    # Search for the match in all categories
+    match = None
+    for category in MATCH_DATA:
+        for m in MATCH_DATA[category]:
+            if m['id'] == match_id:
+                match = m
+                break
+        if match:
+            break
+    
+    if not match:
+        return render_template('match.html', match=None, error="Match not found")
+    
+    return render_template('match.html', match=match)
+
+@app.route('/api/matches')
+def get_all_matches():
+    """API to get all matches grouped by category"""
+    return jsonify(MATCH_DATA)
+
+@app.route('/api/matches/<category>')
+def get_matches_by_category(category):
+    """API to get matches by category (indian/international)"""
+    if category in MATCH_DATA:
+        return jsonify(MATCH_DATA[category])
+    return jsonify({"error": "Category not found"}), 404
+
+@app.route('/api/match/<match_id>')
+def get_match_details(match_id):
+    """API to get specific match details"""
+    for category in MATCH_DATA:
+        for match in MATCH_DATA[category]:
+            if match['id'] == match_id:
+                return jsonify(match)
+    return jsonify({"error": "Match not found"}), 404
+
+@app.route('/api/cricket-players/<team_id>', methods=['GET'])
+def get_cricket_players(team_id):
+    """
+    Fetch cricket players from RapidAPI for a given team ID
+    """
+    url = f"https://cricket-api-free-data.p.rapidapi.com/cricket-players?teamid={team_id}"
+    headers = {
+        'x-rapidapi-host': 'cricket-api-free-data.p.rapidapi.com',
+        'x-rapidapi-key': '5779d8b25dmshee45fe2a8032447p107533jsn6b83c0c7e97a'
+    }
+    try:
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({'error': f'API request failed with status {response.status_code}'}), response.status_code
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
