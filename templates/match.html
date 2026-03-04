@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Live Match Details | CricVision{% endblock %}
+{% block title %}{% if match %}{{ match.team1.name }} vs {{ match.team2.name }} - CricVision{% else %}Match Not Found{% endif %}{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -46,6 +46,18 @@
         background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
     }
 
+    .match-type-badge {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent-primary);
+        padding: 0.4rem 0.8rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+    }
+
     .teams-container {
         display: flex;
         justify-content: space-between;
@@ -56,6 +68,20 @@
     .team-block {
         text-align: center;
         flex: 1;
+    }
+
+    .team-flag {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        margin: 0 auto 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 800;
+        font-size: 1.2rem;
+        color: white;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
     }
 
     .team-name {
@@ -91,6 +117,23 @@
         font-size: 1.2rem;
     }
 
+    .match-status {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(16, 185, 129, 0.1);
+        border-radius: 8px;
+        color: var(--accent-primary);
+        font-weight: 600;
+        margin-top: 1.5rem;
+    }
+
+    .match-venue {
+        text-align: center;
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        margin-top: 0.5rem;
+    }
+
     .win-probability {
         margin-top: 1rem;
         background: rgba(0, 0, 0, 0.3);
@@ -104,7 +147,6 @@
         height: 100%;
         background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
         width: 65%;
-        /* Dynamic */
         transition: width 1s ease-in-out;
         border-radius: 50px;
     }
@@ -164,7 +206,6 @@
             opacity: 0;
             transform: translateY(-10px);
         }
-
         to {
             opacity: 1;
             transform: translateY(0);
@@ -203,7 +244,6 @@
         padding-left: 1rem;
     }
 
-    /* Current Batters & Bowler */
     .players-status {
         background: var(--bg-panel);
         border: 1px solid var(--border-color);
@@ -237,34 +277,93 @@
         font-size: 0.85rem;
         color: var(--text-muted);
     }
+
+    .back-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 50px;
+        color: var(--text-main);
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .back-btn:hover {
+        border-color: var(--accent-primary);
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .error-container {
+        max-width: 600px;
+        margin: 8rem auto;
+        text-align: center;
+        padding: 2rem;
+        background: var(--bg-panel);
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+
+    .error-container h2 {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+    }
+
+    .error-container p {
+        color: var(--text-muted);
+        margin-bottom: 1.5rem;
+    }
+
+    .error-container a {
+        color: var(--accent-primary);
+    }
 </style>
 {% endblock %}
 
 {% block content %}
+{% if match %}
 <div class="match-center">
     <div class="main-panel">
+        <a href="{{ url_for('matches') }}" class="back-btn">
+            ← Back to Matches
+        </a>
+
         <div class="score-banner">
+            <span class="match-type-badge">{{ match.match_type }}</span>
+            
             <div class="live-indicator" style="margin-bottom: 1rem; justify-content: center;">
-                <span
-                    style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 8px #ef4444;"></span>
-                LIVE MATCH CENTER - TEST MATCH
+                <span style="display:inline-block; width:8px; height:8px; background:#ef4444; border-radius:50%; box-shadow: 0 0 8px #ef4444;"></span>
+                LIVE MATCH CENTER
             </div>
 
             <div class="teams-container">
                 <div class="team-block" id="team1-block">
-                    <div class="team-name">INDIA</div>
-                    <div class="team-score" id="team1-score">314/4</div>
-                    <div class="team-overs" id="team1-overs">82.4 Overs</div>
+                    <div class="team-flag" id="team1-flag" style="background: {{ match.team1.flag }};">
+                        {{ match.team1.short }}
+                    </div>
+                    <div class="team-name" id="team1-name">{{ match.team1.name }}</div>
+                    <div class="team-score" id="team1-score">{{ match.team1.score }}</div>
+                    <div class="team-overs" id="team1-overs">{{ match.team1.overs }} Overs</div>
                 </div>
 
                 <div class="vs-badge">VS</div>
 
-                <div class="team-block" style="opacity: 0.6;">
-                    <div class="team-name">AUSTRALIA</div>
-                    <div class="team-score">276/10</div>
-                    <div class="team-overs">1st Innings</div>
+                <div class="team-block" id="team2-block">
+                    <div class="team-flag" id="team2-flag" style="background: {{ match.team2.flag }};">
+                        {{ match.team2.short }}
+                    </div>
+                    <div class="team-name" id="team2-name">{{ match.team2.name }}</div>
+                    <div class="team-score" id="team2-score">{{ match.team2.score }}</div>
+                    <div class="team-overs" id="team2-overs">{{ match.team2.overs }} Overs</div>
                 </div>
             </div>
+
+            <div class="match-status" id="match-status">{{ match.status }}</div>
+            <div class="match-venue">{{ match.venue }}</div>
 
             <div style="margin-top: 2rem;">
                 <div style="font-size: 0.9rem; margin-bottom: 0.5rem; color: var(--text-muted); text-align: center;">
@@ -273,8 +372,8 @@
                     <div class="prob-bar" id="prob-bar"></div>
                 </div>
                 <div class="prob-labels">
-                    <span id="prob-t1">IND 65%</span>
-                    <span id="prob-t2">AUS 35%</span>
+                    <span id="prob-t1">{{ match.team1.short }} 65%</span>
+                    <span id="prob-t2">{{ match.team2.short }} 35%</span>
                 </div>
             </div>
         </div>
@@ -282,34 +381,32 @@
         <div class="players-status">
             <h3 class="section-head">Current Players</h3>
             <div style="margin-bottom: 1rem;">
-                <div
-                    style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
                     Batters</div>
                 <div class="player-row">
-                    <div class="p-name">V. Kohli <span style="color:var(--accent-primary)">*</span></div>
+                    <div class="p-name" id="bat1-name">Player 1 <span style="color:var(--accent-primary)">*</span></div>
                     <div style="text-align: right;">
-                        <span class="p-score" id="bat1-score">82</span>
-                        <div class="p-detail" id="bat1-balls">(134)</div>
+                        <span class="p-score" id="bat1-score">0</span>
+                        <div class="p-detail" id="bat1-balls">(0)</div>
                     </div>
                 </div>
                 <div class="player-row">
-                    <div class="p-name">R. Pant</div>
+                    <div class="p-name" id="bat2-name">Player 2</div>
                     <div style="text-align: right;">
-                        <span class="p-score" id="bat2-score">45</span>
-                        <div class="p-detail" id="bat2-balls">(38)</div>
+                        <span class="p-score" id="bat2-score">0</span>
+                        <div class="p-detail" id="bat2-balls">(0)</div>
                     </div>
                 </div>
             </div>
 
             <div style="margin-top: 1.5rem;">
-                <div
-                    style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
+                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem; text-transform: uppercase; letter-spacing: 1px;">
                     Bowler</div>
                 <div class="player-row">
-                    <div class="p-name">P. Cummins</div>
+                    <div class="p-name" id="bowl-name">Bowler</div>
                     <div style="text-align: right;">
-                        <span class="p-score" id="bowl-figs">2/74</span>
-                        <div class="p-detail" id="bowl-overs">18.4 overs</div>
+                        <span class="p-score" id="bowl-figs">0/0</span>
+                        <div class="p-detail" id="bowl-overs">0 overs</div>
                     </div>
                 </div>
             </div>
@@ -326,44 +423,38 @@
             </h3>
 
             <div id="comments-container">
-                <div class="comment-item event-boundary">
-                    <div class="over-badge">82.4</div>
-                    <div class="comment-text">
-                        <strong>Cummins to Kohli, FOUR!</strong> What a shot! Glorious cover drive. Just leans into it
-                        and the ball races away to the boundary.
-                    </div>
-                </div>
-                <div class="comment-item">
-                    <div class="over-badge">82.3</div>
-                    <div class="comment-text">
-                        <strong>Cummins to Kohli, no run.</strong> Pitched up outside off, watchfully left alone.
-                    </div>
-                </div>
-                <div class="comment-item">
-                    <div class="over-badge">82.2</div>
-                    <div class="comment-text">
-                        <strong>Cummins to Kohli, 2 runs.</strong> Tucked off the pads through square leg for a couple.
-                        Good running.
-                    </div>
-                </div>
+                <!-- Comments will be added dynamically -->
             </div>
         </div>
     </div>
 </div>
+{% else %}
+<div class="error-container">
+    <h2>Match Not Found</h2>
+    <p>{{ error or "The match you're looking for doesn't exist or has been removed." }}</p>
+    <a href="{{ url_for('matches') }}">← Browse all matches</a>
+</div>
+{% endif %}
+{% endblock %}
 
+{% block scripts %}
+{% if match %}
 <script>
+    // Match data from server
+    const matchData = {{ match | tojson }};
+    
     document.addEventListener("DOMContentLoaded", function () {
-        // State variables
-        let totalRuns = 314;
-        let wickets = 4;
-        let overs = 82.4;
-        let bat1Runs = 82;
-        let bat1Balls = 134;
-        let bat2Runs = 45;
-        let bat2Balls = 38;
-        let bowlerRunsEscaped = 74;
+        // State variables - initialize from match data
+        let totalRuns = parseInt("{{ match.team1.score }}".split('/')[0]) || 0;
+        let wickets = parseInt("{{ match.team1.score }}".split('/')[1]) || 0;
+        let overs = parseFloat("{{ match.team1.overs }}") || 0;
+        let bat1Runs = 0;
+        let bat1Balls = 0;
+        let bat2Runs = 0;
+        let bat2Balls = 0;
+        let bowlerRunsEscaped = 0;
 
-        let strikeFlag = 1; // 1 for bat1, 2 for bat2
+        let strikeFlag = 1;
 
         const possibleEvents = [
             { runs: 0, text: "Solid defense. No run.", type: "dot" },
@@ -392,12 +483,14 @@
         const probBar = document.getElementById("prob-bar");
         const probT1 = document.getElementById("prob-t1");
         const probT2 = document.getElementById("prob-t2");
+        const matchStatusEl = document.getElementById("match-status");
 
         let probValue = 65;
+        const team1Short = "{{ match.team1.short }}";
+        const team2Short = "{{ match.team2.short }}";
 
         // Simulator loop
         setInterval(() => {
-            // Update Over Count
             let balls = parseFloat((overs % 1).toFixed(1));
             let overInt = Math.floor(overs);
             balls += 0.1;
@@ -409,7 +502,6 @@
             if (isWicket) {
                 event = wicketEvents[Math.floor(Math.random() * wicketEvents.length)];
                 wickets += 1;
-                // reset batter at strike
                 if (strikeFlag === 1) {
                     bat1Runs = 0;
                     bat1Balls = 0;
@@ -431,7 +523,6 @@
                     bat2Balls += 1;
                 }
 
-                // Swap strike on 1s and 3s
                 if (runsScored === 1 || runsScored === 3) {
                     strikeFlag = strikeFlag === 1 ? 2 : 1;
                 }
@@ -440,11 +531,10 @@
             if (balls >= 0.6) {
                 balls = 0;
                 overInt += 1;
-                strikeFlag = strikeFlag === 1 ? 2 : 1; // Swap strike at end of over
+                strikeFlag = strikeFlag === 1 ? 2 : 1;
             }
             overs = overInt + balls;
 
-            // DOM Updates
             scoreEl.innerText = `${totalRuns}/${wickets}`;
             scoreEl.classList.add("highlight-update");
             setTimeout(() => scoreEl.classList.remove("highlight-update"), 500);
@@ -461,29 +551,28 @@
             let bowlerTotal = 18 + bowlerBalls;
             bowlerOversEl.innerText = `${bowlerTotal.toFixed(1)} overs`;
 
-            // Fluctuating Win Prob
-            let probShift = (Math.random() * 4) - 2; // -2 to +2 shift
+            let probShift = (Math.random() * 4) - 2;
             if (runsScored >= 4) probShift += 2;
             if (isWicket) probShift -= 5;
 
             probValue = Math.max(10, Math.min(90, probValue + probShift));
             probBar.style.width = `${probValue}%`;
-            probT1.innerText = `IND ${Math.round(probValue)}%`;
-            probT2.innerText = `AUS ${Math.round(100 - probValue)}%`;
+            probT1.innerText = `${team1Short} ${Math.round(probValue)}%`;
+            probT2.innerText = `${team2Short} ${Math.round(100 - probValue)}%`;
 
-            // Commentary Update
-            const batterName = strikeFlag === 1 ? "Kohli" : "Pant";
+            const batterName = strikeFlag === 1 ? "Player 1" : "Player 2";
             const commentHTML = `
                 <div class="comment-item ${event.class || ''}">
                     <div class="over-badge">${overs.toFixed(1)}</div>
                     <div class="comment-text">
-                        <strong>Cummins to ${batterName}, ${runsScored || (isWicket ? 'OUT' : 'no run')}.</strong> ${event.text}
+                        <strong>Bowler to ${batterName}, ${runsScored || (isWicket ? 'OUT' : 'no run')}.</strong> ${event.text}
                     </div>
                 </div>
             `;
             commentsContainer.insertAdjacentHTML('afterbegin', commentHTML);
 
-        }, 4500); // 4.5 seconds per ball
+        }, 4500);
     });
 </script>
+{% endif %}
 {% endblock %}
