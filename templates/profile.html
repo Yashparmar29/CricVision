@@ -2,10 +2,18 @@
 {% block title %}Profile - CricVision AI{% endblock %}
 
 {% block content %}
+
 <style>
+    /* ===== FIX FOR FIXED NAVBAR ===== */
+    body {
+        padding-top: 90px;
+        /* Adjust if your navbar height is different */
+    }
+
+    /* ===== PROFILE CONTAINER ===== */
     .profile-container {
         max-width: 600px;
-        margin: 8rem auto 4rem;
+        margin: 4rem auto;
         background: var(--bg-panel);
         backdrop-filter: blur(16px);
         padding: 3rem;
@@ -14,8 +22,10 @@
         box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         position: relative;
         overflow: hidden;
+        animation: fadeInUp 0.6s ease;
     }
 
+    /* Decorative Gradient Glow */
     .profile-container::before {
         content: '';
         position: absolute;
@@ -33,6 +43,7 @@
         z-index: 1;
     }
 
+    /* ===== HEADER ===== */
     .profile-header {
         text-align: center;
         margin-bottom: 2.5rem;
@@ -49,6 +60,11 @@
         font-size: 3rem;
         margin: 0 auto 1.5rem;
         box-shadow: 0 10px 25px var(--accent-glow);
+        transition: transform 0.3s ease;
+    }
+
+    .profile-avatar:hover {
+        transform: scale(1.05);
     }
 
     .profile-header h1 {
@@ -59,6 +75,7 @@
         -webkit-text-fill-color: transparent;
     }
 
+    /* ===== DETAILS SECTION ===== */
     .profile-details {
         display: flex;
         flex-direction: column;
@@ -73,7 +90,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        transition: transform 0.3s ease;
+        transition: all 0.3s ease;
     }
 
     .detail-item:hover {
@@ -84,7 +101,7 @@
 
     .detail-label {
         color: var(--text-muted);
-        font-size: 0.9rem;
+        font-size: 0.85rem;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
@@ -95,6 +112,7 @@
         font-weight: 500;
     }
 
+    /* ===== BUTTON ===== */
     .profile-actions {
         margin-top: 3rem;
         text-align: center;
@@ -108,17 +126,44 @@
         text-decoration: none;
         border-radius: 50px;
         font-weight: 600;
-        transition: all 0.3s;
+        transition: all 0.3s ease;
         box-shadow: 0 4px 15px var(--accent-glow);
     }
 
     .btn-edit:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    }
+
+    /* ===== ANIMATION ===== */
+    @keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+        .profile-container {
+            margin: 2rem 1rem;
+            padding: 2rem;
+        }
+
+        .detail-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
     }
 </style>
 
-<div class="profile-container fade-in">
+<div class="profile-container">
     <div class="profile-header">
         <div class="profile-avatar">
             👤
@@ -142,7 +187,10 @@
     </div>
 
     <div class="profile-actions">
-        <a href="{{ url_for('dashboard') }}" class="btn-edit">Back to Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" class="btn-edit">
+            Back to Dashboard
+        </a>
     </div>
 </div>
+
 {% endblock %}
