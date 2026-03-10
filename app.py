@@ -4,6 +4,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import cv2
 import os
 import requests
+from datetime import datetime
 from src.preprocess import extract_landmarks
 from src.classify import classify_shot
 
@@ -96,48 +97,47 @@ MATCH_DATA = {
     ]
 }
 
-class User(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True, nullable=False)
-    email = db.Column(db.String(120), unique=True, nullable=False)
-    mobile = db.Column(db.String(15), unique=True, nullable=False)
-    password_hash = db.Column(db.String(256), nullable=False)
+# Sample player data
+PLAYER_DATA = [
+    {"id": "virat-kohli", "name": "Virat Kohli", "team": "India", "role": "Batsman", "age": 35, "image": "🟢"},
+    {"id": "rohit-sharma", "name": "Rohit Sharma", "team": "India", "role": "Batsman", "age": 37, "image": "🟢"},
+    {"id": "jasprit-bumrah", "name": "Jasprit Bumrah", "team": "India", "role": "Bowler", "age": 30, "image": "🟢"},
+    {"id": "ms-dhoni", "name": "MS Dhoni", "team": "India", "role": "Wicket Keeper", "age": 43, "image": "🟢"},
+    {"id": "hardik-pandya", "name": "Hardik Pandya", "team": "India", "role": "All-Rounder", "age": 30, "image": "🟢"},
+    {"id": "ravindra-jadeja", "name": "Ravindra Jadeja", "team": "India", "role": "All-Rounder", "age": 35, "image": "🟢"},
+    {"id": "suryakumar-yadav", "name": "Suryakumar Yadav", "team": "India", "role": "Batsman", "age": 33, "image": "🟢"},
+    {"id": "shubman-gill", "name": "Shubman Gill", "team": "India", "role": "Batsman", "age": 24, "image": "🟢"},
+    {"id": "pat-cummins", "name": "Pat Cummins", "team": "Australia", "role": "Bowler", "age": 31, "image": "🟡"},
+    {"id": "steve-smith", "name": "Steve Smith", "team": "Australia", "role": "Batsman", "age": 34, "image": "🟡"},
+    {"id": "david-warner", "name": "David Warner", "team": "Australia", "role": "Batsman", "age": 37, "image": "🟡"},
+    {"id": "glenn-maxwell", "name": "Glenn Maxwell", "team": "Australia", "role": "All-Rounder", "age": 35, "image": "🟡"},
+    {"id": "jos-buttler", "name": "Jos Buttler", "team": "England", "role": "Wicket Keeper", "age": 33, "image": "🔵"},
+    {"id": "ben-stokes", "name": "Ben Stokes", "team": "England", "role": "All-Rounder", "age": 32, "image": "🔵"},
+    {"id": "joe-root", "name": "Joe Root", "team": "England", "role": "Batsman", "age": 33, "image": "🔵"},
+    {"id": "kane-williamson", "name": "Kane Williamson", "team": "New Zealand", "role": "Batsman", "age": 33, "image": "⚫"},
+    {"id": "trent-boult", "name": "Trent Boult", "team": "New Zealand", "role": "Bowler", "age": 31, "image": "⚫"},
+    {"id": "babar-azam", "name": "Babar Azam", "team": "Pakistan", "role": "Batsman", "age": 29, "image": "🟢"},
+    {"id": "shaheen-shah", "name": "Shaheen Shah Afridi", "team": "Pakistan", "role": "Bowler", "age": 24, "image": "🟢"},
+    {"id": "rahmanullah-gurbaz", "name": "Rahmanullah Gurbaz", "team": "Afghanistan", "role": "Wicket Keeper", "age": 22, "image": "🔴"}
+]
 
-with app.app_context():
-    db.create_all()
-
-@app.context_processor
-def inject_user():
-    return dict(logged_in='username' in session, username=session.get('username'))
-
-@app.route('/')
-def index():
-    return render_template('index.html')
-
-@app.route('/features')
-def features():
-    return render_template('features.html')
-
-@app.route('/dashboard')
-def dashboard():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    return render_template('dashboard.html')
-
-@app.route('/profile')
-def profile():
-    if 'username' not in session:
-        return redirect(url_for('login'))
-    user = User.query.filter_by(username=session['username']).first()
-    if not user:
-        session.pop('username', None) # Clear invalid session
-        return redirect(url_for('login'))
-    return render_template('profile.html', user=user)
-
-@app.route('/matches')
-def matches():
-    """Page to select and view matches"""
-    return render_template('matches.html', matches=MATCH_DATA)
+# Team data
+TEAM_DATA = [
+    {"id": "india", "name": "India", "short": "IND", "flag": "#138808", "rank": 1},
+    {"id": "australia", "name": "Australia", "short": "AUS", "flag": "#00008B", "rank": 2},
+    {"id": "england", "name": "England", "short": "ENG", "flag": "#012169", "rank": 3},
+    {"id": "new-zealand", "name": "New Zealand", "short": "NZ", "flag": "#000000", "rank": 4},
+    {"id": "pakistan", "name": "Pakistan", "short": "PAK", "flag": "#006600", "rank": 5},
+    {"id": "south-africa", "name": "South Africa", "short": "SA", "flag": "#006400", "rank": 6},
+    {"id": "sri-lanka", "name": "Sri Lanka", "short": "SL", "flag": "#000080", "rank": 7},
+    {"id": "afghanistan", "name": "Afghanistan", "short": "AFG", "flag": "#ED1C24", "rank": 8},
+    {"id": "bangladesh", "name": "Bangladesh", "short": "BAN", "flag": "#006A4E", "rank": 9},
+    {"id": "west-indies", "name": "West Indies", "short": "WI", "flag": "#FF0000", "rank": 10},
+    {"id": "rcb", "name": "Royal Challengers Bangalore", "short": "RCB", "flag": "#d32f2f", "rank": 0},
+    {"id": "mi", "name": "Mumbai Indians", "short": "MI", "flag": "#004ba0", "rank": 0},
+    {"id": "csk", "name": "Chennai Super Kings", "short": "CSK", "flag": "#fdd835", "rank": 0},
+    {"id": "kkr", "name": "Kolkata Knight Riders", "short": "KKR", "flag": "#4a148c", "rank": 0},
+    {"id": "srh", "name": "Sunrisers Hyderabad", "short": "SRH", "flag": "#ff6f00", "rank": 0},
 
 @app.route('/match/<match_id>')
 def match_details(match_id):
