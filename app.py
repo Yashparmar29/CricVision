@@ -138,91 +138,91 @@ TEAM_DATA = [
     {"id": "csk", "name": "Chennai Super Kings", "short": "CSK", "flag": "#fdd835", "rank": 0},
     {"id": "kkr", "name": "Kolkata Knight Riders", "short": "KKR", "flag": "#4a148c", "rank": 0},
     {"id": "srh", "name": "Sunrisers Hyderabad", "short": "SRH", "flag": "#ff6f00", "rank": 0},
+    {"id": "dc", "name": "Delhi Capitals", "short": "DC", "flag": "#004ba0", "rank": 0}
+]
 
-@app.route('/match/<match_id>')
-def match_details(match_id):
-    """Get specific match details"""
-    # Search for the match in all categories
-    match = None
-    for category in MATCH_DATA:
-        for m in MATCH_DATA[category]:
-            if m['id'] == match_id:
-                match = m
-                break
-        if match:
-            break
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    username = db.Column(db.String(80), unique=True, nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    mobile = db.Column(db.String(15), unique=True, nullable=False)
+    password_hash = db.Column(db.String(256), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    analyses_count = db.Column(db.Integer, default=0)
+    is_active = db.Column(db.Boolean, default=True)
+
+class Analysis(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    shot_type = db.Column(db.String(50), nullable=False)
+    frames_processed = db.Column(db.Integer, default=0)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    if not match:
-        return render_template('match.html', match=None, error="Match not found")
+    user = db.relationship('User', backref=db.backref('analyses', lazy=True))
+
+class Favorite(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    favorite_type = db.Column(db.String(20), nullable=False)  # 'match', 'player', 'team'
+    favorite_id = db.Column(db.String(100), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     
-    return render_template('match.html', match=match)
+    user = db.relationship('User', backref=db.backref('favorites', lazy=True))
 
-@app.route('/api/matches')
-def get_all_matches():
-    """API to get all matches grouped by category"""
-    return jsonify(MATCH_DATA)
+class Player(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    player_id = db.Column(db.String(100), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    team = db.Column(db.String(100), nullable=False)
+    role = db.Column(db.String(50), nullable=False)
+    age = db.Column(db.Integer)
+    image = db.Column(db.String(200))
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-@app.route('/api/matches/<category>')
-def get_matches_by_category(category):
-    """API to get matches by category (indian/international)"""
-    if category in MATCH_DATA:
-        return jsonify(MATCH_DATA[category])
-    return jsonify({"error": "Category not found"}), 404
+with app.app_context():
+    db.create_all()
+    
+    # Seed player data if empty
+    if Player.query.count() == 0:
+        for p in PLAYER_DATA:
+            player = Player(
+                player_id=p['id'],
+                name=p['name'],
+                team=p['team'],
+                role=p['role'],
+                age=p['age'],
+                image=p['image']
+            )
+            db.session.add(player)
+        db.session.commit()
 
-@app.route('/api/match/<match_id>')
-def get_match_details(match_id):
-    """API to get specific match details"""
-    for category in MATCH_DATA:
-        for match in MATCH_DATA[category]:
-            if match['id'] == match_id:
-                return jsonify(match)
-    return jsonify({"error": "Match not found"}), 404
+@app.context_processor
+def inject_user():
+    return dict(logged_in='username' in session, username=session.get('username'))
 
-@app.route('/api/cricket-players/<team_id>', methods=['GET'])
-def get_cricket_players(team_id):
-    """
-    Fetch cricket players from RapidAPI for a given team ID
-    """
-    url = f"https://cricket-api-free-data.p.rapidapi.com/cricket-players?teamid={team_id}"
-    headers = {
-        'x-rapidapi-host': 'cricket-api-free-data.p.rapidapi.com',
-        'x-rapidapi-key': '5779d8b25dmshee45fe2a8032447p107533jsn6b83c0c7e97a'
-    }
-    try:
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            return jsonify(response.json())
-        else:
-            return jsonify({'error': f'API request failed with status {response.status_code}'}), response.status_code
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        user = User.query.filter_by(username=username).first()
-        if user and check_password_hash(user.password_hash, password):
-            session['username'] = username
-            return redirect(url_for('dashboard'))
-        return render_template('login.html', error='Invalid credentials')
-    return render_template('login.html')
+@app.route('/features')
+def features():
+    return render_template('features.html')
 
-@app.route('/signup', methods=['GET', 'POST'])
-def signup():
-    if request.method == 'POST':
-        username = request.form['username']
-        email = request.form['email']
-        mobile = request.form['mobile']
-        password = request.form['password']
-        
-        # Check if user already exists
-        existing_user = User.query.filter((User.username == username) | (User.email == email) | (User.mobile == mobile)).first()
-        if existing_user:
-            if existing_user.username == username:
-                return render_template('signup.html', error='Username already exists')
-            elif existing_user.email == email:
+@app.route('/dashboard')
+def dashboard():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    return render_template('dashboard.html')
+
+@app.route('/profile')
+def profile():
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    user = User.query.filter_by(username=session['username']).first()
+    if not user:
+        session.pop('username', None)
+        return redirect(url_for('login'))
+    return render_template('profile.html', user=user)
                 return render_template('signup.html', error='Email already exists')
             else:
                 return render_template('signup.html', error='Mobile number already exists')
