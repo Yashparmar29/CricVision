@@ -223,49 +223,143 @@ def profile():
         session.pop('username', None)
         return redirect(url_for('login'))
     return render_template('profile.html', user=user)
-                return render_template('signup.html', error='Email already exists')
-            else:
-                return render_template('signup.html', error='Mobile number already exists')
 
-        hashed_password = generate_password_hash(password)
-        new_user = User(username=username, email=email, mobile=mobile, password_hash=hashed_password)
-        db.session.add(new_user)
-        db.session.commit()
-        
-        session['username'] = username
-        return redirect(url_for('dashboard'))
-    return render_template('signup.html')
+@app.route('/matches')
+def matches():
+    """Page to select and view matches"""
+    return render_template('matches.html', matches=MATCH_DATA)
 
-@app.route('/logout')
-def logout():
-    session.pop('username', None)
-    return redirect(url_for('login'))
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    if 'username' not in session:
-        return jsonify({'error': 'Please log in to upload'})
-    file = request.files.get('video')
-    if file:
-        filepath = os.path.join(app.config['UPLOAD_FOLDER'], file.filename)
-        file.save(filepath)
-        # Process video
-        cap = cv2.VideoCapture(filepath)
-        landmarks_seq = []
-        frame_count = 0
-        while cap.isOpened() and frame_count < 100:  # Limit frames for demo
-            ret, frame = cap.read()
-            if not ret:
+@app.route('/match/<match_id>')
+def match_details(match_id):
+    """Get specific match details"""
+    match = None
+    for category in MATCH_DATA:
+        for m in MATCH_DATA[category]:
+            if m['id'] == match_id:
+                match = m
                 break
-            lm = extract_landmarks(frame)
-            if lm is not None:
-                landmarks_seq.append(lm)
-            frame_count += 1
-        cap.release()
-        os.remove(filepath)  # Clean up
-        shot = classify_shot(landmarks_seq)
-        return jsonify({'shot': shot, 'frames_processed': len(landmarks_seq)})
-    return jsonify({'error': 'No file uploaded'})
+        if match:
+            break
+    
+    if not match:
+        return render_template('match.html', match=None, error="Match not found")
+    
+    return render_template('match.html', match=match)
 
-if __name__ == '__main__':
-    app.run(debug=True)
+# ==================== NEW ROUTES ====================
+
+@app.route('/players')
+def players():
+    """Browse and search cricket players"""
+    search_query = request.args.get('search', '')
+    team_filter = request.args.get('team', '')
+    
+    players_list = Player.query
+    
+    if search_query:
+        players_list = players_list.filter(Player.name.ilike(f'%{search_query}%'))
+    if team_filter:
+        players_list = players_list.filter(Player.team.ilike(f'%{team_filter}%'))
+    
+    players_list = players_list.all()
+    
+    # Get unique teams for filter
+    teams = db.session.query(Player.team).distinct().all()
+    teams = [t[0] for t in teams]
+    
+    return render_template('players.html', players=players_list, teams=teams, search_query=search_query, team_filter=team_filter)
+
+@app.route('/player/<player_id>')
+def player_details(player_id):
+    """Individual player details"""
+    player = Player.query.filter_by(player_id=player_id).first()
+    if not player:
+        # Try to find by name as fallback
+        player = Player.query.filter_by(name=player_id.replace('-', ' ').title()).first()
+    
+    if not player:
+        return render_template('players.html', error="Player not found", players=Player.query.all(), teams=[], search_query='', team_filter='')
+    
+    # Get user's favorite status
+    is_favorite = False
+    if 'username' in session:
+        user = User.query.filter_by(username=session['username']).first()
+        if user:
+            fav = Favorite.query.filter_by(user_id=user.id, favorite_type='player', favorite_id=player.player_id).first()
+            is_favorite = fav is not None
+    
+    return render_template('player.html', player=player, is_favorite=is_favorite)
+
+@app.route('/teams')
+def teams():
+    """Browse cricket teams"""
+    return render_template('teams.html', teams=TEAM_DATA)
+
+@app.route('/team/<team_id>')
+def team_details(team_id):
+    """Individual team details"""
+    team = None
+    for t in TEAM_DATA:
+        if t['id'] == team_id:
+            team = t
+            break
+    
+    if not team:
+        return render_template('teams.html', error="Team not found", teams=TEAM_DATA)
+    
+    # Get players from this team
+    team_players = Player.query.filter_by(team=team['name']).all()
+    
+    return render_template('team.html', team=team, players=team_players)
+
+@app.route('/leaderboard')
+def leaderboard():
+    """Leaderboard showing top users"""
+    top_users = User.query.order_by(User.analyses_count.desc()).limit(20).all()
+    return render_template('leaderboard.html', users=top_users)
+
+@app.route('/history')
+def history():
+    """User's analysis history"""
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.filter_by(username=session['username']).first()
+    if not user:
+        session.pop('username', None)
+        return redirect(url_for('login'))
+    
+    analyses = Analysis.query.filter_by(user_id=user.id).order_by(Analysis.created_at.desc()).all()
+    return render_template('history.html', analyses=analyses, user=user)
+
+@app.route('/settings', methods=['GET', 'POST'])
+def settings():
+    """User settings page"""
+    if 'username' not in session:
+        return redirect(url_for('login'))
+    
+    user = User.query.filter_by(username=session['username']).first()
+    if not user:
+        session.pop('username', None)
+        return redirect(url_for('login'))
+    
+    if request.method == 'POST':
+        # Update user settings
+        new_email = request.form.get('email')
+        new_mobile = request.form.get('mobile')
+        current_password = request.form.get('current_password')
+        new_password = request.form.get('new_password')
+        
+        # Verify current password
+        if not check_password_hash(user.password_hash, current_password):
+            return render_template('settings.html', user=user, error='Current password is incorrect')
+        
+        # Check if email already exists (excluding current user)
+        if new_email and new_email != user.email:
+            existing = User.query.filter(User.email == new_email, User.id != user.id).first()
+            if existing:
+                return render_template('settings.html', user=user, error='Email already in use')
+            user.email = new_email
+        
+        # Check if mobile already exists (excluding current user)
+        if new_mobile and new_mobile != user.mobile:
