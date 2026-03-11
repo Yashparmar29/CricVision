@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}Leaderboard - CricVision AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .leaderboard-container {
+        max-width: 800px;
+        margin: 6rem auto 4rem;
+        padding: 0 5%;
+    }
+
+    .page-title {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-title h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-title p {
+        color: var(--text-muted);
+    }
+
+    .leaderboard-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        overflow: hidden;
+    }
+
+    .leaderboard-header {
+        display: grid;
+        grid-template-columns: 60px 1fr 150px;
+        padding: 1rem 1.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px 12px 0 0;
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .leaderboard-item {
+        display: grid;
+        grid-template-columns: 60px 1fr 150px;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .leaderboard-item:last-child {
+        border-bottom: none;
+    }
+
+    .leaderboard-item:hover {
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .leaderboard-item.top-3 {
+        background: rgba(16, 185, 129, 0.1);
+    }
+
+    .rank {
+        font-size: 1.25rem;
+        font-weight: 700;
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .rank.gold {
+        color: #FFD700;
+    }
+
+    .rank.silver {
+        color: #C0C0C0;
+    }
+
+    .rank.bronze {
+        color: #CD7F32;
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .user-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+    }
+
+    .username {
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .analyses-count {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--accent-primary);
+    }
+
+    .analyses-label {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .no-users {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+    }
+
+    .trophy-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="leaderboard-container">
+    <div class="page-title">
+        <div class="trophy-icon">🏆</div>
+        <h1>Leaderboard</h1>
+        <p>Top users based on shot analysis count</p>
+    </div>
+
+    {% if users %}
+    <div class="leaderboard-card">
+        <div class="leaderboard-header">
+            <span>Rank</span>
+            <span>User</span>
+            <span style="text-align: right;">Analyses</span>
+        </div>
+        
+        {% for user in users %}
+        <div class="leaderboard-item {% if loop.index <= 3 %}top-3{% endif %}">
+            <div class="rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
+                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
+            </div>
+            <div class="user-info">
+                <div class="user-avatar">
+                    {{ user.username[0]|upper }}
+                </div>
+                <span class="username">{{ user.username }}</span>
+            </div>
+            <div style="text-align: right;">
+                <div class="analyses-count">{{ user.analyses_count }}</div>
+                <div class="analyses-label">analyses</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-users">
+        <p>No users yet. Be the first to analyze some shots!</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,215 @@
+{% extends "base.html" %}
+{% block title %}{{ player.name }} - CricVision AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .player-container {
+        max-width: 800px;
+        margin: 6rem auto 4rem;
+        padding: 0 5%;
+    }
+
+    .player-header {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 3rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .player-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 100px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        opacity: 0.3;
+    }
+
+    .player-avatar {
+        width: 120px;
+        height: 120px;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 4rem;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        z-index: 1;
+        box-shadow: 0 10px 30px var(--accent-glow);
+    }
+
+    .player-name {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .player-role {
+        color: var(--accent-primary);
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .player-team-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.1);
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        color: var(--text-main);
+        font-weight: 500;
+        position: relative;
+        z-index: 1;
+    }
+
+    .player-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-top: 2rem;
+    }
+
+    .stat-card {
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: var(--text-muted);
+        text-decoration: none;
+        margin-bottom: 2rem;
+        transition: color 0.3s;
+    }
+
+    .back-link:hover {
+        color: var(--accent-primary);
+    }
+
+    .favorite-btn {
+        position: absolute;
+        top: 1.5rem;
+        right: 1.5rem;
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        font-size: 1.5rem;
+        transition: all 0.3s;
+        z-index: 1;
+    }
+
+    .favorite-btn:hover {
+        border-color: var(--accent-primary);
+        transform: scale(1.1);
+    }
+
+    .favorite-btn.active {
+        background: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="player-container">
+    <a href="{{ url_for('players') }}" class="back-link">
+        ← Back to Players
+    </a>
+
+    <div class="player-header">
+        {% if logged_in %}
+        <button class="favorite-btn {% if is_favorite %}active{% endif %}" onclick="toggleFavorite()">
+            {{ '❤️' if is_favorite else '🤍' }}
+        </button>
+        {% endif %}
+        
+        <div class="player-avatar">{{ player.image }}</div>
+        <h1 class="player-name">{{ player.name }}</h1>
+        <div class="player-role">{{ player.role }}</div>
+        <div class="player-team-badge">{{ player.team }}</div>
+
+        <div class="player-stats">
+            <div class="stat-card">
+                <div class="stat-label">Age</div>
+                <div class="stat-value">{{ player.age }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Team</div>
+                <div class="stat-value" style="font-size: 1.5rem;">{{ player.team }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-label">Role</div>
+                <div class="stat-value" style="font-size: 1.2rem;">{{ player.role }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+    function toggleFavorite() {
+        if (!{{ logged_in|lower }}) {
+            alert('Please login to add favorites');
+            return;
+        }
+
+        const btn = document.querySelector('.favorite-btn');
+        const isActive = btn.classList.contains('active');
+        
+        fetch('/api/favorites', {
+            method: isActive ? 'DELETE' : 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                type: 'player',
+                favorite_id: '{{ player.player_id }}'
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                alert(data.error);
+            } else {
+                btn.classList.toggle('active');
+                btn.innerHTML = btn.classList.contains('active') ? '❤️' : '🤍';
+            }
+        })
+        .catch(error => console.error('Error:', error));
+    }
+</script>
+{% endblock %}
+{% endblock %}
