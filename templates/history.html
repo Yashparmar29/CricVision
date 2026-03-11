@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+{% block title %}Analysis History - CricVision AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .history-container {
+        max-width: 900px;
+        margin: 6rem auto 4rem;
+        padding: 0 5%;
+    }
+
+    .page-title {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-title h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-title p {
+        color: var(--text-muted);
+    }
+
+    .history-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2rem;
+        overflow: hidden;
+    }
+
+    .history-header {
+        display: grid;
+        grid-template-columns: 1fr 150px 150px;
+        padding: 1rem 1.5rem;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 12px 12px 0 0;
+        font-weight: 600;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .history-item {
+        display: grid;
+        grid-template-columns: 1fr 150px 150px;
+        padding: 1.2rem 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .history-item:last-child {
+        border-bottom: none;
+    }
+
+    .history-item:hover {
+        background: rgba(16, 185, 129, 0.05);
+    }
+
+    .shot-type {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .shot-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+
+    .shot-name {
+        font-weight: 600;
+    }
+
+    .shot-description {
+        font-size: 0.85rem;
+        color: var(--text-muted);
+    }
+
+    .frames-count {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 600;
+        color: var(--text-muted);
+    }
+
+    .timestamp {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        text-align: right;
+    }
+
+    .no-history {
+        text-align: center;
+        padding: 3rem;
+        color: var(--text-muted);
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+
+    .stats-summary {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-box {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+        font-family: 'Outfit', sans-serif;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="page-title">
+        <h1>📊 Analysis History</h1>
+        <p>Your shot analysis results and activity</p>
+    </div>
+
+    {% if analyses %}
+    <div class="stats-summary">
+        <div class="stat-box">
+            <div class="stat-value">{{ analyses|length }}</div>
+            <div class="stat-label">Total Analyses</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">
+                {% set unique_shots = [] %}
+                {% for a in analyses %}
+                    {% if a.shot_type not in unique_shots %}
+                        {{ unique_shots.append(a.shot_type) }}
+                    {% endif %}
+                {% endfor %}
+                {{ unique_shots|length }}
+            </div>
+            <div class="stat-label">Unique Shots</div>
+        </div>
+        <div class="stat-box">
+            <div class="stat-value">
+                {% set total_frames = 0 %}
+                {% for a in analyses %}
+                    {% set total_frames = total_frames + a.frames_processed %}
+                {% endfor %}
+                {{ total_frames }}
+            </div>
+            <div class="stat-label">Total Frames</div>
+        </div>
+    </div>
+
+    <div class="history-card">
+        <div class="history-header">
+            <span>Shot Type</span>
+            <span style="text-align: center;">Frames</span>
+            <span style="text-align: right;">Date</span>
+        </div>
+        
+        {% for analysis in analyses %}
+        <div class="history-item">
+            <div class="shot-type">
+                <div class="shot-icon">🏏</div>
+                <div>
+                    <div class="shot-name">{{ analysis.shot_type }}</div>
+                    <div class="shot-description">AI classified shot</div>
+                </div>
+            </div>
+            <div class="frames-count" style="text-align: center;">
+                {{ analysis.frames_processed }}
+            </div>
+            <div class="timestamp">
+                {% if analysis.created_at %}
+                {{ analysis.created_at.strftime('%b %d, %Y') }}
+                {% else %}
+                Recently
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="no-history">
+        <div class="empty-icon">📹</div>
+        <h2>No Analysis History Yet</h2>
+        <p>Start analyzing your cricket shots to see your history here!</p>
+        <a href="{{ url_for('dashboard') }}" style="display: inline-block; margin-top: 1rem; padding: 0.8rem 2rem; background: linear-gradient(135deg, var(--accent-primary), #059669); color: white; text-decoration: none; border-radius: 50px; font-weight: 600;">
+            Go to Dashboard
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

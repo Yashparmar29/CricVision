@@ -835,8 +835,13 @@
             <a href="{{ url_for('index') }}">Home</a>
             <a href="{{ url_for('features') }}">Features</a>
             <a href="{{ url_for('matches') }}">Matches</a>
+            <a href="{{ url_for('players') }}">Players</a>
+            <a href="{{ url_for('teams') }}">Teams</a>
+            <a href="{{ url_for('leaderboard') }}">Leaderboard</a>
             {% if logged_in %}
             <a href="{{ url_for('dashboard') }}">Dashboard</a>
+            <a href="{{ url_for('history') }}">History</a>
+            <a href="{{ url_for('settings') }}">Settings</a>
             <a href="{{ url_for('profile') }}"
                 style="color: var(--accent-primary); text-decoration: none; font-weight: 500;">Hi, {{ username }}</a>
             <a href="{{ url_for('logout') }}" class="nav-btn"
