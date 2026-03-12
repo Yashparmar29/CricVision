@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Teams - CricVision AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .teams-container {
+        max-width: 1200px;
+        margin: 6rem auto 4rem;
+        padding: 0 5%;
+    }
+
+    .page-title {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-title h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-title p {
+        color: var(--text-muted);
+    }
+
+    .teams-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .team-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .team-card:hover {
+        transform: translateY(-5px);
+        border-color: var(--accent-primary);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .team-flag {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        margin: 0 auto 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: white;
+        border: 3px solid white;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    }
+
+    .team-name {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .team-short {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .team-rank {
+        display: inline-block;
+        padding: 0.3rem 1rem;
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent-primary);
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .team-rank-international {
+        background: rgba(99, 102, 241, 0.1);
+        color: var(--accent-secondary);
+    }
+
+    .section-label {
+        text-align: center;
+        font-size: 1.5rem;
+        margin: 2rem 0 1rem;
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="teams-container">
+    <div class="page-title">
+        <h1>🏏 Cricket Teams</h1>
+        <p>Explore international and franchise cricket teams</p>
+    </div>
+
+    <div class="section-label">International Teams</div>
+    <div class="teams-grid">
+        {% for team in teams %}
+        {% if team.rank > 0 %}
+        <div class="team-card" onclick="viewTeam('{{ team.id }}')">
+            <div class="team-flag" style="background: {{ team.flag }};">
+                {{ team.short }}
+            </div>
+            <div class="team-name">{{ team.name }}</div>
+            <div class="team-short">{{ team.short }}</div>
+            <div class="team-rank team-rank-international">Rank #{{ team.rank }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="section-label">Franchise Teams (IPL)</div>
+    <div class="teams-grid">
+        {% for team in teams %}
+        {% if team.rank == 0 %}
+        <div class="team-card" onclick="viewTeam('{{ team.id }}')">
+            <div class="team-flag" style="background: {{ team.flag }};">
+                {{ team.short }}
+            </div>
+            <div class="team-name">{{ team.name }}</div>
+            <div class="team-short">{{ team.short }}</div>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+
+<script>
+    function viewTeam(teamId) {
+        window.location.href = '/team/' + teamId;
+    }
+</script>
+{% endblock %}
