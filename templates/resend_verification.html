@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block title %}Resend Verification - CricVision AI{% endblock %}
+{% block content %}
+
+<style>
+    body {
+        padding-top: 90px;
+    }
+    .auth-container {
+        max-width: 450px;
+        margin: 4rem auto;
+        background: var(--bg-panel);
+        backdrop-filter: blur(16px);
+        padding: 3rem;
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+    .auth-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+    .form-group input {
+        width: 100%;
+        padding: 0.8rem 1rem;
+        background: rgba(0, 0, 0, 0.2);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        color: var(--text-main);
+        font-size: 1rem;
+    }
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+    }
+    .btn-submit {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--accent-primary), #059669);
+        border: none;
+        border-radius: 8px;
+        color: white;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+    .auth-links {
+        text-align: center;
+        margin-top: 1.5rem;
+        color: var(--text-muted);
+    }
+    .auth-links a {
+        color: var(--accent-primary);
+        text-decoration: none;
+    }
+    .auth-links a:hover {
+        text-decoration: underline;
+    }
+    .success-msg {
+        background: rgba(16, 185, 129, 0.1);
+        color: #6ee7b7;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    .error-msg {
+        background: rgba(239, 68, 68, 0.1);
+        color: #fca5a5;
+        padding: 1rem;
+        border-radius: 8px;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+</style>
+
+<div class="auth-container">
+    <h1>📧 Resend Verification Email</h1>
+    
+    {% if success %}
+    <div class="success-msg">{{ success }}</div>
+    {% endif %}
+    
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+    
+    <p style="color: var(--text-muted); text-align: center; margin-bottom: 2rem;">
+        Enter your email address and we'll resend the verification link.
+    </p>
+    
+    <form method="POST" action="/resend-verification">
+        <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your registered email">
+        </div>
+        
+        <button type="submit" class="btn-submit">Resend Verification Email</button>
+    </form>
+    
+    <div class="auth-links">
+        <a href="{{ url_for('login') }}">← Back to Login</a>
+    </div>
+</div>
+
+{% endblock %}
