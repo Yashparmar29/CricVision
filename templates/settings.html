@@ -1,0 +1,230 @@
+{% extends "base.html" %}
+{% block title %}Settings - CricVision AI{% endblock %}
+
+{% block extra_head %}
+<style>
+    .settings-container {
+        max-width: 700px;
+        margin: 6rem auto 4rem;
+        padding: 0 5%;
+    }
+
+    .page-title {
+        text-align: center;
+        margin-bottom: 3rem;
+    }
+
+    .page-title h1 {
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .page-title p {
+        color: var(--text-muted);
+    }
+
+    .settings-card {
+        background: var(--bg-panel);
+        border: 1px solid var(--border-color);
+        border-radius: 20px;
+        padding: 2.5rem;
+    }
+
+    .settings-section {
+        margin-bottom: 2rem;
+    }
+
+    .settings-section:last-child {
+        margin-bottom: 0;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+    }
+
+    .form-group input {
+        width: 100%;
+        padding: 1rem;
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        color: var(--text-main);
+        font-size: 1rem;
+        transition: all 0.3s;
+        box-sizing: border-box;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: var(--accent-primary);
+        box-shadow: 0 0 15px var(--accent-glow);
+    }
+
+    .form-group input:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .submit-btn {
+        width: 100%;
+        padding: 1rem;
+        background: linear-gradient(135deg, var(--accent-primary), #059669);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 15px var(--accent-glow);
+    }
+
+    .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.6);
+    }
+
+    .message {
+        padding: 1rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        font-weight: 500;
+    }
+
+    .message.error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #fca5a5;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .message.success {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--accent-primary);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .danger-zone {
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        background: rgba(239, 68, 68, 0.05);
+    }
+
+    .user-info {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 2rem;
+        font-weight: 600;
+    }
+
+    .user-details h2 {
+        font-size: 1.5rem;
+        margin-bottom: 0.3rem;
+    }
+
+    .user-details p {
+        color: var(--text-muted);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+    <div class="page-title">
+        <h1>⚙️ Settings</h1>
+        <p>Manage your account preferences</p>
+    </div>
+
+    <div class="settings-card">
+        <div class="user-info">
+            <div class="user-avatar">
+                {{ user.username[0]|upper }}
+            </div>
+            <div class="user-details">
+                <h2>{{ user.username }}</h2>
+                <p>Member since {{ user.created_at.strftime('%B %Y') if user.created_at else 'Recently' }}</p>
+            </div>
+        </div>
+
+        {% if error %}
+        <div class="message error">{{ error }}</div>
+        {% endif %}
+
+        {% if success %}
+        <div class="message success">{{ success }}</div>
+        {% endif %}
+
+        <form method="POST" action="{{ url_for('settings') }}">
+            <div class="settings-section">
+                <h3 class="section-title">Profile Information</h3>
+                
+                <div class="form-group">
+                    <label>Username</label>
+                    <input type="text" value="{{ user.username }}" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" name="email" id="email" value="{{ user.email }}" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="mobile">Mobile Number</label>
+                    <input type="tel" name="mobile" id="mobile" value="{{ user.mobile }}" required>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h3 class="section-title">Change Password</h3>
+                
+                <div class="form-group">
+                    <label for="current_password">Current Password</label>
+                    <input type="password" name="current_password" id="current_password" placeholder="Enter current password">
+                </div>
+
+                <div class="form-group">
+                    <label for="new_password">New Password</label>
+                    <input type="password" name="new_password" id="new_password" placeholder="Enter new password (leave blank to keep current)">
+                </div>
+            </div>
+
+            <button type="submit" class="submit-btn">Save Changes</button>
+        </form>
+
+        <div class="settings-section danger-zone" style="margin-top: 2rem; padding: 1.5rem; border-radius: 12px;">
+            <h3 class="section-title" style="border-bottom-color: rgba(239, 68, 68, 0.2);">Account Statistics</h3>
+            <p style="color: var(--text-muted);">
+                Total shot analyses: <strong style="color: var(--accent-primary);">{{ user.analyses_count }}</strong>
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
