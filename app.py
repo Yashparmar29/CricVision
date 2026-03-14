@@ -346,10 +346,13 @@ def resend_verification():
         user = User.query.filter_by(email=email).first()
         if user:
             if user.is_verified:
-                return render_template('login.html', error='Email already verified. Please login.')
-            send_verification_email(user)
-            return render_template('login.html', success='Verification email sent! Please check your email.')
-        return render_template('login.html', error='No account found with this email.')
+                return render_template('resend_verification.html', error='Email already verified. Please login.')
+            if send_verification_email(user):
+                return render_template('resend_verification.html', success='Verification email sent! Please check your inbox (also check spam folder).')
+            else:
+                return render_template('resend_verification.html', error='Failed to send email. Please try again.')
+        else:
+            return render_template('resend_verification.html', error='No account found with this email address.')
     return render_template('resend_verification.html')
 
 @app.route('/api/matches')
