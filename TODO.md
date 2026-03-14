@@ -1,21 +1,24 @@
-# TODO List - Fix Match Index Functionality
+# Resend Verification Page Fix - TODO
 
-## Phase 1: Update app.py
-- [x] Add match data structure with Indian and International matches
-- [x] Add API endpoint `/api/matches` to get all matches grouped by category
-- [x] Add API endpoint `/api/matches/<match_id>` to get specific match details
-- [x] Update `/match/<match_id>` route to fetch and pass match data to template
+## Plan Implementation Steps
 
-## Phase 2: Update templates/match.html
-- [ ] Add match selection UI with Indian/International tabs
-- [ ] Add match list display for each category
-- [ ] Update JavaScript to fetch match data from API
-- [ ] Make the page dynamic based on match_id
+### 1. Update app.py ✅ Pending
+- [ ] Fix /resend-verification POST handler to render resend_verification.html with success/error messages instead of redirecting to login.html
 
-## Phase 3: Update templates/base.html
-- [ ] Add "Matches" link in navigation
+### 2. Update login.html
+- [ ] Add "Resend verification email" link for unverified users or after failed login
 
-## Phase 4: Testing
-- [ ] Test the match selection functionality
-- [ ] Verify Indian and International matches are displayed correctly
-- [ ] Verify clicking on different matches shows correct data
+### 3. Update signup.html  
+- [ ] Add resend link in success message after account creation
+
+### 4. Testing
+- [ ] Test form submission shows success message on same page
+- [ ] Test invalid email shows error on same page
+- [ ] Verify email sending works (configure SMTP first)
+
+### 5. Optional Improvements
+- [ ] Configure real SMTP credentials
+- [ ] Add rate limiting for resend requests
+- [ ] Add expiration/checks for verification tokens
+
+**Current Status:** Starting implementation...
