@@ -5,9 +5,6 @@ import cv2
 import os
 import requests
 import uuid
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
 from datetime import datetime
 from src.preprocess import extract_landmarks
 from src.classify import classify_shot
