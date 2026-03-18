@@ -1,24 +1,26 @@
-date up# Resend Verification Page Fix - TODO
+# Remove Email Verification Features - Progress Tracker
 
-## Plan Implementation Steps
+## Plan Summary
+- Delete dedicated verification template
+- Remove all verification logic from app.py (model fields, functions, routes, checks, config, imports)
+- Remove resend links from login/signup templates
+- Test functionality post-removal
 
-### 1. Update app.py ✅ **COMPLETE**
-- [x] Fix /resend-verification POST handler to render resend_verification.html with success/error messages instead of redirecting to login.html
+## Steps Checklist
 
-### 2. Update login.html ✅ **COMPLETE**
-- [x] Add "Resend verification email" link for unverified users or after failed login
+### 1. Delete templates/resend_verification.html [ ]
+### 2. Edit app.py - Remove verification-related code [ ]
+   - Remove User model fields: is_verified, verification_token
+   - Remove send_verification_email() function
+   - Remove routes: /verify/<token>, /resend-verification
+   - Remove all is_verified checks (login, upload, dashboard, settings)
+   - Remove MAIL_* config
+   - Remove email imports (smtplib, email.mime)
+   - Update signup(): no email send, direct login possible
+### 3. Edit templates/login.html - Remove resend link [ ]
+### 4. Edit templates/signup.html - Remove resend link [ ]
+### 5. Test: Signup, login, upload without verification [ ]
+### 6. DB Migration if needed (check db_init.py) [ ]
+### 7. Verify no errors, update TODO [ ]
 
-### 3. Update signup.html ✅ **COMPLETE**
-- [x] Add resend link in success message after account creation
-
-### 4. Testing
-- [ ] Test form submission shows success message on same page
-- [ ] Test invalid email shows error on same page
-- [ ] Verify email sending works (configure SMTP first)
-
-### 5. Optional Improvements
-- [ ] Configure real SMTP credentials
-- [ ] Add rate limiting for resend requests
-- [ ] Add expiration/checks for verification tokens
-
-**Current Status:** Starting implementation...
+**Next Step: Delete resend_verification.html**
