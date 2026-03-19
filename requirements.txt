@@ -1,10 +1,10 @@
 opencv-python==4.8.1.78
-tensorflow==2.15.0
-mediapipe==0.10.14
+tensorflow
+mediapipe
 flask==2.3.3
-numpy==1.24.3
-pandas==2.0.3
-scikit-learn==1.3.0
+numpy
+pandas
+scikit-learn
 Flask-SQLAlchemy==3.1.1
 PyMySQL==1.1.0
 requests==2.31.0
