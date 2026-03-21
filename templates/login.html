@@ -1,4 +1,4 @@
-app{% extends "base.html" %}
+{% extends "base.html" %}
 {% block title %}Login - CricVision AI{% endblock %}
 
 {% block content %}
@@ -231,10 +231,6 @@ app{% extends "base.html" %}
         <a href="{{ url_for('signup') }}">Create one here</a>
     </div>
     
-    <div class="auth-links" style="margin-top: 10px;">
-        Didn't receive verification email?
-        <a href="{{ url_for('resend_verification') }}">Resend verification</a>
-    </div>
 </div>
 
 <script>
