@@ -43,18 +43,6 @@ def matches():
                 'id': 'ind1',
                 'name': 'IPL 2026 Final',
                 'match_type': 'T20',
-                'team1': {'flag': 'linear-gradient(135deg, #FF9933, #138808)', 'short': 'CSK', 'name': 'Chennai Super Kings', 'score': '189/4', 'overs': '19.3'},
-                'team2': {'flag': 'linear-gradient(135deg, #0066CC, #FFCB05)', 'short': 'MI', 'name': 'Mumbai Indians', 'score': '185/7', 'overs': '20'},
-                'status': 'CSK won by 4 wickets',
-                'venue': 'MA Chidambaram Stadium, Chennai'
-            }
-        ],
-        'international': [
-            {
-                'id': 'int1',
-                'name': 'India vs Australia - 1st Test',
-                'match_type': 'Test',
-                'team1': {'flag': 'linear-gradient(135deg, #FF9933, #FFFFFF, #138808)', 'short': 'IND', 'name': 'India', 'score': '571/5d', 'overs': '132.4'},
 
 @app.route('/match/<id>')
 def match(id):
