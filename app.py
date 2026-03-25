@@ -4,6 +4,14 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
 import os
 from src.classify import classify_shot
+from src.preprocess import preprocess_video
+from werkzeug.utils import secure_filename
+UPLOAD_FOLDER = 'uploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv'}
+
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev_key_change_me'
@@ -17,6 +25,15 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(120), nullable=False)
+    analyses = db.relationship('Analysis', backref='user', lazy=True)
+
+class Analysis(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
+    filename = db.Column(db.String(200), nullable=False)
+    shot = db.Column(db.String(50), nullable=False)
+    confidence = db.Column(db.Float, nullable=False)
+    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
 
 def login_required(f):
     @wraps(f)
@@ -31,6 +48,29 @@ def login_required(f):
 def index():
     return render_template('index.html')
 
+# Fix incomplete matches route
+@app.route('/matches')
+def matches():
+    matches_data = {
+        'indian': [
+            {
+                'id': 'ind1',
+                'name': 'IPL 2026 Final',
+                'match_type': 'T20',
+                'date': 'May 2026'
+            }
+        ],
+        'international': [
+            {
+                'id': 'int1',
+                'name': 'India vs Australia Test',
+                'match_type': 'Test',
+                'date': 'Dec 2025'
+            }
+        ]
+    }
+    return render_template('matches.html', matches=matches_data)
+
 @app.route('/features')
 def features():
     return render_template('features.html')
@@ -43,6 +83,19 @@ def matches():
                 'id': 'ind1',
                 'name': 'IPL 2026 Final',
                 'match_type': 'T20',
+                'date': 'May 2026'
+            }
+        ],
+        'international': [
+            {
+                'id': 'int1',
+                'name': 'India vs Australia Test',
+                'match_type': 'Test',
+                'date': 'Dec 2025'
+            }
+        ]
+    }
+    return render_template('matches.html', matches=matches_data)
 
 @app.route('/match/<id>')
 def match(id):
@@ -128,12 +181,32 @@ def classify():
     if 'file' not in request.files:
         return jsonify({'error': 'No file'})
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No file selected'})
-    # Mock landmarks sequence
-    landmarks_sequence = [[0.5, 0.5]] * 25  # Mock 25 frames
-    shot = classify_shot(landmarks_sequence)
-    return jsonify({'shot': shot, 'confidence': 0.92})
+    if file.filename == '' or not allowed_file(file.filename):
+        return jsonify({'error': 'Invalid file'})
+    
+    filename = secure_filename(file.filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(filepath)
+    
+    # Real processing
+    landmarks_sequence = preprocess_video(filepath)
+    shot, confidence = classify_shot(landmarks_sequence)
+    
+    # Save to DB
+    analysis = Analysis(
+        user_id=session['user_id'],
+        filename=filename,
+        shot=shot,
+        confidence=confidence
+    )
+    db.session.add(analysis)
+    db.session.commit()
+    
+    return jsonify({
+        'shot': shot,
+        'confidence': confidence,
+        'filename': filename
+    })
 
 if __name__ == '__main__':
     with app.app_context():
