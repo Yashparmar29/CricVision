@@ -118,8 +118,15 @@ def team(id):
     return render_template('team.html')
 
 @app.route('/leaderboard')
+@login_required
 def leaderboard():
-    return render_template('leaderboard.html')
+    from sqlalchemy import func
+    # Top users by analysis count
+    top_users = db.session.query(
+        User, 
+        func.count(Analysis.id).label('count')
+    ).outerjoin(Analysis).group_by(User.id).order_by('count desc').limit(10).all()
+    return render_template('leaderboard.html', top_users=top_users)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -167,7 +174,8 @@ def settings():
 @app.route('/history')
 @login_required
 def history():
-    return render_template('history.html')
+    analyses = Analysis.query.filter_by(user_id=session['user_id']).order_by(Analysis.created_at.desc()).limit(20).all()
+    return render_template('history.html', analyses=analyses)
 
 @app.route('/logout')
 def logout():
