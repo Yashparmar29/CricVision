@@ -63,14 +63,14 @@
 
             if (file) {
                 const formData = new FormData();
-                formData.append('video', file);
+                formData.append('file', file);
 
                 resultDiv.className = 'active';
                 resultDiv.innerHTML = '<span class="loading-spinner"></span> Analyzing your biomechanical data...';
                 resultDiv.style.color = 'var(--text-main)';
                 resultDiv.style.border = '1px solid rgba(255,255,255,0.1)';
 
-                fetch('/upload', {
+                fetch('/classify', {
                     method: 'POST',
                     body: formData
                 })
@@ -81,7 +81,7 @@
                             resultDiv.style.color = '#ef4444';
                             resultDiv.style.borderColor = 'rgba(239, 68, 68, 0.3)';
                         } else {
-                            resultDiv.innerHTML = `🏏 <span style="color:var(--accent-primary);">AI Detection: <strong>${data.shot}</strong></span><br><span style="font-size:0.9rem; color:var(--text-muted); margin-top:5px; display:block;">Frames Processed: ${data.frames_processed}</span>`;
+                            resultDiv.innerHTML = `🏏 <span style="color:var(--accent-primary);">Detected Shot: <strong>${data.shot}</strong></span><br><span style="font-size:0.9rem; color:var(--text-muted); margin-top:5px; display:block;">Confidence: ${(data.confidence * 100).toFixed(1)}% | File: ${data.filename}</span>`;
                             resultDiv.style.borderColor = 'var(--accent-primary)';
                             resultDiv.style.background = 'rgba(16, 185, 129, 0.05)';
                         }
