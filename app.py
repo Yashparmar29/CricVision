@@ -1,4 +1,4 @@
-prefrom flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
+from flask import Flask, render_template, request, redirect, url_for, session, flash, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from functools import wraps
@@ -7,6 +7,8 @@ from src.classify import classify_shot
 from src.preprocess import preprocess_video
 from werkzeug.utils import secure_filename
 
+ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv'}
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -14,8 +16,6 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'dev_key_change_me'
 UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-ALLOWED_EXTENSIONS = {'mp4', 'avi', 'mov', 'mkv'}
-app.config['SECRET_KEY'] = 'dev_key_change_me'
 basedir = os.path.abspath(os.path.dirname(__file__))
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'instance', 'cricvision.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
