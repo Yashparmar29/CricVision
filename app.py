@@ -76,28 +76,6 @@ def matches():
 def features():
     return render_template('features.html')
 
-@app.route('/matches')
-def matches():
-    matches_data = {
-        'indian': [
-            {
-                'id': 'ind1',
-                'name': 'IPL 2026 Final',
-                'match_type': 'T20',
-                'date': 'May 2026'
-            }
-        ],
-        'international': [
-            {
-                'id': 'int1',
-                'name': 'India vs Australia Test',
-                'match_type': 'Test',
-                'date': 'Dec 2025'
-            }
-        ]
-    }
-    return render_template('matches.html', matches=matches_data)
-
 @app.route('/match/<id>')
 def match(id):
     return render_template('match.html')
