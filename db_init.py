@@ -8,6 +8,4 @@ try:
     print("Database cricvision_db created or already exists.")
 except Exception as e:
     print(f"Error creating database: {e}")
-finally:
-    if 'connection' in locals() and connection.open:
-        connection.close()
+
