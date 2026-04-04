@@ -47,5 +47,14 @@ The processed coordinates are fed into an **LSTM Network**:
 `Input (Sequence_Length, Landmarks) → LSTM (64 units) → Dense (32) → Softmax (Classification)`
 
 ---
-
+## 📂 Project Structure
+```text
+├── data/               # Raw video clips and extracted CSV landmarks
+├── models/             # Pre-trained .h5 or TFLite models
+├── src/
+│   ├── preprocess.py   # Landmark extraction script
+│   ├── train.py        # LSTM Model training logic
+│   └── main.py         # Real-time inference & OpenCV overlay
+├── requirements.txt    # Project dependencies
+└── README.md
 
