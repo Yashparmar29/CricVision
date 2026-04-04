@@ -48,13 +48,4 @@ The processed coordinates are fed into an **LSTM Network**:
 
 ---
 
-## 📂 Project Structure
-```text
-├── data/               # Raw video clips and extracted CSV landmarks
-├── models/             # Pre-trained .h5 or TFLite models
-├── src/
-│   ├── preprocess.py   # Landmark extraction script
-│   ├── train.py        # LSTM Model training logic
-│   └── main.py         # Real-time inference & OpenCV overlay
-├── requirements.txt    # Project dependencies
-└── README.md
+
