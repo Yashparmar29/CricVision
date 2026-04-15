@@ -36,5 +36,4 @@ All tests passed:
 - GET /leaderboard - 200 OK
 - GET /settings - 302 → 200 (redirect to login as expected)
 - GET /history - 302 → 200 (redirect to login as expected)
-- GET /player/virat-kohli - 200 OK
-- GET /api/players - 200 OK
+
