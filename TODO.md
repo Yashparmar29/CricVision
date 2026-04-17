@@ -7,6 +7,6 @@
 - [ ] Fix app.py syntax and duplicates
 - [ ] Run python app.py
 - [ ] Verify in browser: http://localhost:5000
-- [ ] Test classify endpoint (may fail due to incomplete ML)
+- [x] Test classify endpoint (may fail due to incomplete ML)
 
 Current: Fixing app.py...
