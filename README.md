@@ -14,7 +14,6 @@
 * **Biomechanical Analysis:** Calculates real-time joint angles to differentiate between similar movements (e.g., distinguishing a Defensive Push from a Cover Drive).
 * **Performance:** Optimized for real-time inference on standard CPUs using coordinate-based feature extraction.
 
----
 
 ## 🧠 The Logic: How It Works
 The system identifies shots by calculating the **Cosine Similarity** and **Joint Angles** between specific landmarks. For a **Cover Drive**, the system monitors the angle $\theta$ of the lead knee and the vertical trajectory of the wrists.
