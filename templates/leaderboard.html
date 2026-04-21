@@ -42,6 +42,15 @@
         font-size: 0.9rem;
     }
 
+    .chart-container {
+        margin-bottom: 2rem;
+        height: 400px;
+        background: var(--bg-panel);
+        border-radius: 16px;
+        padding: 1.5rem;
+        border: 1px solid var(--border-color);
+    }
+
     .leaderboard-item {
         display: grid;
         grid-template-columns: 60px 1fr 150px;
@@ -138,6 +147,11 @@
 
     {% if users %}
     <div class="leaderboard-card">
+        <div class="chart-container">
+            <h3 style="text-align: center; margin-bottom: 1.5rem; color: var(--text-main);">Visual Leaderboard</h3>
+            <canvas id="leaderboardChart"></canvas>
+        </div>
+
         <div class="leaderboard-header">
             <span>Rank</span>
             <span>User</span>
@@ -147,8 +161,23 @@
         {% for user in users %}
         <div class="leaderboard-item {% if loop.index <= 3 %}top-3{% endif %}">
             <div class="rank {% if loop.index == 1 %}gold{% elif loop.index == 2 %}silver{% elif loop.index == 3 %}bronze{% endif %}">
-                {% if loop.index == 1 %}🥇{% elif loop.index == 2 %}🥈{% elif loop.index == 3 %}🥉{% else %}{{ loop.index }}{% endif %}
-            </div>
+    {% endif %}
+
+    <script src="{{ url_for('static', filename='charts.js') }}"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Prepare data from users (top 10)
+            const labels = [];
+            const data = [];
+            const users = {{ users[:10] | tojson | safe }};
+            users.forEach(function(user) {
+                labels.push(user.username);
+                data.push(user.analyses_count);
+            });
+            createLeaderboardBarChart('leaderboardChart', {labels: labels, data: data});
+        });
+    </script>
+</div>
             <div class="user-info">
                 <div class="user-avatar">
                     {{ user.username[0]|upper }}
